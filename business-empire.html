@@ -1,0 +1,1179 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Business Empire Ultimate</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --gold:#f0b429;--gold2:#ffd700;--green:#00ff9d;--red:#ff4757;
+  --blue:#00d2ff;--purple:#a855f7;--bg:#05080f;--bg2:#0a0f1e;
+  --card:#111827;--card2:#1a2235;--border:rgba(240,180,41,0.2);
+  --text:#e2e8f0;--muted:#6b7280;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Rajdhani',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse 80% 50% at 20% 20%,rgba(168,85,247,0.04) 0%,transparent 60%),radial-gradient(ellipse 60% 40% at 80% 80%,rgba(0,210,255,0.05) 0%,transparent 60%);pointer-events:none;z-index:0}
+
+#header{position:sticky;top:0;z-index:100;background:rgba(5,8,15,0.97);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);padding:8px 16px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+#header h1{font-family:'Orbitron',monospace;font-size:1rem;font-weight:900;background:linear-gradient(135deg,var(--gold),var(--gold2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;letter-spacing:2px;white-space:nowrap}
+.stat-badge{display:flex;align-items:center;gap:6px;background:var(--card);border:1px solid var(--border);border-radius:8px;padding:5px 12px;font-size:0.85rem}
+.stat-badge .lbl{color:var(--muted);font-size:0.7rem}
+.stat-badge .val{font-family:'Orbitron',monospace;font-weight:700}
+.val.gold{color:var(--gold)}.val.green{color:var(--green)}.val.blue{color:var(--blue)}.val.purple{color:var(--purple)}.val.red{color:var(--red)}
+
+/* Day counter special */
+#day-badge{background:linear-gradient(135deg,rgba(168,85,247,0.2),rgba(0,210,255,0.1));border-color:rgba(168,85,247,0.4)}
+
+/* Parttime button */
+#parttime-btn{
+  background:linear-gradient(135deg,#1a3a1a,#166534);
+  border:1px solid #22c55e;color:#86efac;
+  border-radius:8px;padding:5px 14px;cursor:pointer;
+  font-family:'Rajdhani',sans-serif;font-size:0.85rem;font-weight:700;
+  transition:all 0.2s;white-space:nowrap;
+}
+#parttime-btn:hover:not(:disabled){background:linear-gradient(135deg,#166534,#15803d);transform:translateY(-1px)}
+#parttime-btn:disabled{opacity:0.5;cursor:not-allowed;transform:none}
+#parttime-cooldown{font-size:0.7rem;color:var(--muted);text-align:center;margin-top:2px}
+
+#crisis-banner{display:none;background:linear-gradient(90deg,#7f1d1d,#991b1b);border-top:2px solid #ef4444;padding:7px 20px;text-align:center;font-family:'Orbitron',monospace;font-size:0.82rem;font-weight:700;color:#fca5a5;letter-spacing:2px;animation:pulse 1s ease-in-out infinite alternate}
+#payday-banner{display:none;background:linear-gradient(90deg,#14532d,#166534);border-top:2px solid #22c55e;padding:7px 20px;text-align:center;font-family:'Orbitron',monospace;font-size:0.82rem;font-weight:700;color:#86efac;letter-spacing:1px}
+@keyframes pulse{from{opacity:0.8}to{opacity:1}}
+
+#tabs{display:flex;gap:4px;padding:10px 16px 0;border-bottom:1px solid var(--border);background:var(--bg2);overflow-x:auto;position:sticky;top:73px;z-index:99}
+.tab{padding:7px 16px;border-radius:8px 8px 0 0;background:var(--card);border:1px solid var(--border);color:var(--muted);cursor:pointer;font-family:'Rajdhani',sans-serif;font-size:0.9rem;font-weight:600;white-space:nowrap;transition:all 0.2s;border-bottom:none}
+.tab:hover{color:var(--text);background:var(--card2)}
+.tab.active{background:var(--card2);color:var(--gold);border-color:var(--gold);border-bottom-color:var(--card2)}
+
+#main{padding:16px;max-width:1400px;margin:0 auto;position:relative;z-index:1}
+.panel{display:none}.panel.active{display:block}
+
+.card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:14px}
+.card-title{font-family:'Orbitron',monospace;font-size:0.85rem;color:var(--gold);margin-bottom:10px;letter-spacing:1px;display:flex;align-items:center;gap:8px}
+.grid-2{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:10px}
+.grid-3{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px}
+
+.biz-card{background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:13px;transition:border-color 0.2s}
+.biz-card:hover{border-color:rgba(240,180,41,0.5)}
+.biz-card h3{font-size:0.95rem;font-weight:700;margin-bottom:3px}
+.biz-card .info{font-size:0.78rem;color:var(--muted);margin-bottom:7px}
+
+.btn{padding:6px 12px;border-radius:6px;border:none;cursor:pointer;font-family:'Rajdhani',sans-serif;font-size:0.88rem;font-weight:700;transition:all 0.15s;display:inline-flex;align-items:center;gap:4px}
+.btn-gold{background:linear-gradient(135deg,#92610a,#d4a017);color:#fff}
+.btn-gold:hover{background:linear-gradient(135deg,#b5790e,#f0b429);transform:translateY(-1px)}
+.btn-green{background:linear-gradient(135deg,#065f46,#059669);color:#fff}
+.btn-green:hover{background:linear-gradient(135deg,#047857,#10b981);transform:translateY(-1px)}
+.btn-red{background:linear-gradient(135deg,#7f1d1d,#dc2626);color:#fff}
+.btn-red:hover{background:linear-gradient(135deg,#991b1b,#ef4444);transform:translateY(-1px)}
+.btn-blue{background:linear-gradient(135deg,#1e3a5f,#2563eb);color:#fff}
+.btn-blue:hover{background:linear-gradient(135deg,#1d4ed8,#3b82f6);transform:translateY(-1px)}
+.btn-sm{padding:4px 10px;font-size:0.78rem}
+.btn:disabled{opacity:0.4;cursor:not-allowed;transform:none!important}
+
+.progress-bar{height:5px;background:rgba(255,255,255,0.1);border-radius:3px;overflow:hidden}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--gold),var(--gold2));border-radius:3px;transition:width 0.3s}
+
+.stock-row{display:grid;grid-template-columns:1fr 90px 75px 75px 110px;gap:8px;align-items:center;padding:9px 10px;border-radius:7px;border-bottom:1px solid rgba(255,255,255,0.05)}
+.stock-row:hover{background:rgba(255,255,255,0.03)}
+.stock-row.header{color:var(--muted);font-size:0.75rem;font-weight:600;text-transform:uppercase;letter-spacing:1px}
+.price-up{color:var(--green)}.price-down{color:var(--red)}
+
+.crypto-card{background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:13px;display:flex;flex-direction:column;gap:7px}
+.crypto-price{font-family:'Orbitron',monospace;font-size:1rem;font-weight:700}
+
+.country-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:9px;margin-top:10px}
+.country-card{background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:11px;cursor:pointer;transition:all 0.2s}
+.country-card:hover{border-color:rgba(240,180,41,0.6);background:var(--card)}
+.country-card.owned{border-color:var(--green)}
+.country-card h4{font-size:0.9rem;font-weight:700;margin-bottom:3px}
+.country-card .details{font-size:0.75rem;color:var(--muted)}
+
+.emp-card{background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:13px}
+.luxury-card{background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:13px;display:flex;align-items:center;gap:11px}
+.luxury-icon{font-size:2.2rem}
+.luxury-info{flex:1}
+.luxury-info h3{font-size:0.95rem;font-weight:700}
+.luxury-info p{font-size:0.78rem;color:var(--muted)}
+
+.ach-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:9px}
+.ach-card{background:var(--card2);border:2px solid rgba(255,255,255,0.08);border-radius:10px;padding:13px;text-align:center;transition:all 0.3s}
+.ach-card.unlocked{border-color:var(--gold);background:rgba(240,180,41,0.07)}
+.ach-icon{font-size:1.9rem;margin-bottom:5px}
+.ach-name{font-size:0.82rem;font-weight:700}
+.ach-desc{font-size:0.72rem;color:var(--muted);margin-top:2px}
+
+#ticker{background:linear-gradient(90deg,var(--bg2),var(--card));border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:5px 0;overflow:hidden}
+#ticker-inner{display:flex;gap:40px;white-space:nowrap;animation:ticker 30s linear infinite}
+@keyframes ticker{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+.tick-item{font-size:0.75rem;font-family:'Orbitron',monospace}
+
+#toast-container{position:fixed;bottom:18px;right:18px;z-index:999;display:flex;flex-direction:column;gap:7px}
+.toast{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:9px 14px;font-size:0.82rem;font-weight:600;animation:slideIn 0.3s ease,fadeOut 0.5s ease 2.5s forwards;max-width:280px}
+.toast.success{border-color:var(--green);color:var(--green)}
+.toast.error{border-color:var(--red);color:var(--red)}
+.toast.info{border-color:var(--blue);color:var(--blue)}
+.toast.warning{border-color:var(--gold);color:var(--gold)}
+@keyframes slideIn{from{transform:translateX(100px);opacity:0}to{transform:translateX(0);opacity:1}}
+@keyframes fadeOut{from{opacity:1}to{opacity:0;height:0;padding:0;margin:0}}
+
+hr.divider{border:none;border-top:1px solid var(--border);margin:10px 0}
+.tag{display:inline-block;padding:2px 7px;border-radius:4px;font-size:0.72rem;font-weight:700}
+.tag-gold{background:rgba(240,180,41,0.2);color:var(--gold)}
+.tag-green{background:rgba(0,255,157,0.15);color:var(--green)}
+.tag-red{background:rgba(255,71,87,0.2);color:var(--red)}
+.tag-blue{background:rgba(0,210,255,0.15);color:var(--blue)}
+.rating-bar{display:flex;align-items:center;gap:8px;margin:5px 0}
+.rating-label{width:130px;font-size:0.82rem;color:var(--muted)}
+.rating-track{flex:1;height:7px;background:rgba(255,255,255,0.08);border-radius:3px;overflow:hidden}
+.rating-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--gold),var(--gold2));transition:width 0.6s}
+.emp-badge{display:inline-flex;align-items:center;gap:5px;background:var(--card2);border:1px solid var(--border);border-radius:20px;padding:3px 9px;font-size:0.76rem}
+.loan-row{display:flex;align-items:center;justify-content:space-between;padding:9px;background:var(--card2);border-radius:8px;margin-bottom:7px;gap:8px}
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:var(--bg)}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+
+/* Payday animation */
+@keyframes paydayAnim{0%{transform:scale(1)}50%{transform:scale(1.05)}100%{transform:scale(1)}}
+.payday-flash{animation:paydayAnim 0.4s ease}
+</style>
+</head>
+<body>
+<div id="toast-container"></div>
+
+<div id="header">
+  <h1>💼 BUSINESS EMPIRE</h1>
+  <div class="stat-badge"><span class="lbl">БАЛАНС</span><span class="val gold" id="h-money">$500</span></div>
+  <div class="stat-badge"><span class="lbl">ДОХОД/СЕК</span><span class="val green" id="h-income">$0</span></div>
+  <div class="stat-badge"><span class="lbl">РАСХОДЫ/СЕК</span><span class="val red" id="h-expense">$0</span></div>
+  <div class="stat-badge"><span class="lbl">ЧИСТЫЙ/СЕК</span><span class="val blue" id="h-net">$0</span></div>
+  <div class="stat-badge" id="day-badge">
+    <span class="lbl">ДЕНЬ</span><span class="val purple" id="h-day">1</span>
+    <span class="lbl" style="margin-left:6px">ГОД</span><span class="val purple" id="h-year">1</span>
+  </div>
+  <div class="stat-badge"><span class="lbl">ИМПЕРИЯ</span><span class="val purple" id="h-rank">Новичок</span></div>
+  <!-- Parttime work block -->
+  <div style="display:flex;flex-direction:column;align-items:center">
+    <button id="parttime-btn" onclick="doParttime()">💼 Подработать</button>
+    <div id="parttime-cooldown">готово!</div>
+  </div>
+  <div style="margin-left:auto;display:flex;gap:7px">
+    <button class="btn btn-blue btn-sm" onclick="saveGame()">💾 Сохранить</button>
+    <button class="btn btn-red btn-sm" onclick="resetGame()">🗑 Сброс</button>
+  </div>
+</div>
+
+<div id="crisis-banner">⚠ ЭКОНОМИЧЕСКИЙ КРИЗИС — РЫНКИ РУШАТСЯ! ДОХОДЫ СНИЖЕНЫ НА 50%</div>
+<div id="payday-banner">💰 ДЕНЬ ВЫПЛАТЫ ЖАЛОВАНЬЯ! Каждые 15 дней подработка приносит больше!</div>
+
+<div id="ticker"><div id="ticker-inner"></div></div>
+
+<div id="tabs">
+  <div class="tab active" onclick="showTab('overview',this)">🏠 Обзор</div>
+  <div class="tab" onclick="showTab('business',this)">🏢 Бизнесы</div>
+  <div class="tab" onclick="showTab('realty',this)">🌍 Недвижимость</div>
+  <div class="tab" onclick="showTab('stocks',this)">📈 Биржа</div>
+  <div class="tab" onclick="showTab('crypto',this)">🪙 Крипта</div>
+  <div class="tab" onclick="showTab('employees',this)">👨‍💼 Сотрудники</div>
+  <div class="tab" onclick="showTab('luxury',this)">✈ Роскошь</div>
+  <div class="tab" onclick="showTab('loans',this)">🏦 Кредиты</div>
+  <div class="tab" onclick="showTab('achievements',this)">🏆 Достижения</div>
+</div>
+
+<div id="main">
+
+<!-- OVERVIEW -->
+<div class="panel active" id="panel-overview">
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:14px">
+    <div class="card">
+      <div class="card-title">🏆 Рейтинг</div>
+      <div id="rank-display" style="font-family:'Orbitron',monospace;font-size:1.4rem;color:var(--gold);margin-bottom:10px"></div>
+      <div id="rank-bars"></div>
+      <hr class="divider">
+      <div style="font-size:0.78rem;color:var(--muted)">Всего заработано: <span style="color:var(--gold);font-weight:700" id="total-earned">$0</span></div>
+    </div>
+    <div class="card">
+      <div class="card-title">📊 Финансовая сводка</div>
+      <div id="fin-summary"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">📅 Игровое время</div>
+      <div id="time-summary"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">🌐 События</div>
+      <div id="event-log" style="font-size:0.8rem;display:flex;flex-direction:column;gap:5px;max-height:190px;overflow-y:auto"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">💡 Подсказки</div>
+      <div style="font-size:0.83rem;color:var(--muted);line-height:1.7" id="tips-box"></div>
+    </div>
+  </div>
+</div>
+
+<!-- BUSINESS -->
+<div class="panel" id="panel-business">
+  <div class="card" style="margin-bottom:14px">
+    <div class="card-title">🏭 Бизнесы и корпорации</div>
+    <p style="font-size:0.8rem;color:var(--muted)">Налоги: <span id="tax-rate" style="color:var(--red)">20%</span> | Каждый уровень повышает цену на 40%</p>
+  </div>
+  <div class="grid-2" id="biz-grid"></div>
+</div>
+
+<!-- REALTY -->
+<div class="panel" id="panel-realty">
+  <div class="card" style="margin-bottom:14px">
+    <div class="card-title">🌍 Мировая недвижимость</div>
+    <p style="font-size:0.8rem;color:var(--muted)">Покупайте объекты по всему миру для пассивного дохода</p>
+  </div>
+  <div style="display:flex;gap:7px;flex-wrap:wrap;margin-bottom:10px" id="region-filters"></div>
+  <div class="country-grid" id="realty-grid"></div>
+</div>
+
+<!-- STOCKS -->
+<div class="panel" id="panel-stocks">
+  <div class="card" style="margin-bottom:14px">
+    <div class="card-title">📈 Фондовая биржа</div>
+    <p style="font-size:0.8rem;color:var(--muted)">Портфель: <span id="portfolio-val" style="color:var(--blue)">$0</span></p>
+  </div>
+  <div class="card">
+    <div class="stock-row header"><span>Компания</span><span>Цена</span><span>Изм.</span><span>У вас</span><span>Действия</span></div>
+    <div id="stocks-list"></div>
+  </div>
+  <div class="card" style="margin-top:14px">
+    <div class="card-title">💼 Портфель</div>
+    <div id="my-portfolio"></div>
+  </div>
+</div>
+
+<!-- CRYPTO -->
+<div class="panel" id="panel-crypto">
+  <div class="card" style="margin-bottom:14px">
+    <div class="card-title">🪙 Криптобиржа</div>
+    <p style="font-size:0.8rem;color:var(--muted)">Кошелёк: <span id="wallet-val" style="color:var(--blue)">$0</span></p>
+  </div>
+  <div class="grid-3" id="crypto-grid"></div>
+  <div class="card" style="margin-top:14px">
+    <div class="card-title">🔑 Кошелёк</div>
+    <div id="my-wallet" style="display:flex;flex-wrap:wrap;gap:7px"></div>
+  </div>
+</div>
+
+<!-- EMPLOYEES -->
+<div class="panel" id="panel-employees">
+  <div class="card" style="margin-bottom:14px">
+    <div class="card-title">👨‍💼 Персонал</div>
+    <p style="font-size:0.8rem;color:var(--muted)">Сотрудников: <span id="emp-count" style="color:var(--blue)">0</span> | Общая зарплата: <span id="emp-salary-total" style="color:var(--red)">$0/с</span></p>
+  </div>
+  <div class="grid-2" id="emp-grid"></div>
+</div>
+
+<!-- LUXURY -->
+<div class="panel" id="panel-luxury">
+  <div class="card" style="margin-bottom:14px">
+    <div class="card-title">✈ Роскошь и статус</div>
+    <p style="font-size:0.8rem;color:var(--muted)">Престиж: <span id="prestige-total" style="color:var(--gold)">0 ⭐</span></p>
+  </div>
+  <div class="grid-2" id="luxury-grid"></div>
+</div>
+
+<!-- LOANS -->
+<div class="panel" id="panel-loans">
+  <div class="card" style="margin-bottom:14px">
+    <div class="card-title">🏦 Кредиты</div>
+    <p style="font-size:0.8rem;color:var(--muted)">Долг: <span id="debt-display" style="color:var(--red)">$0</span> | Выплаты: <span id="debt-payment" style="color:var(--red)">$0/с</span></p>
+  </div>
+  <div id="loans-list"></div>
+</div>
+
+<!-- ACHIEVEMENTS -->
+<div class="panel" id="panel-achievements">
+  <div class="card" style="margin-bottom:14px">
+    <div class="card-title">🏆 Достижения</div>
+    <p style="font-size:0.8rem;color:var(--muted)">Открыто: <span id="ach-count" style="color:var(--gold)">0</span> / <span id="ach-total">0</span></p>
+  </div>
+  <div class="ach-grid" id="ach-grid"></div>
+</div>
+
+</div><!-- /main -->
+
+<script>
+// =============================================
+// GAME STATE
+// =============================================
+let G = {
+  money: 500,          // Start with $500 — humble beginnings
+  totalEarned: 0,
+  passive: 0,
+  expenses: 0,
+  tick: 0,             // real seconds
+  gameDay: 1,          // 1 real second = 1 game day
+  crisis: false,
+  crisisTimer: 0,
+  taxRate: 0.20,
+  parttime: {
+    cooldownLeft: 0,   // seconds until next allowed click
+    COOLDOWN: 8,       // 8 real seconds between clicks
+    paydayBonus: 1,    // multiplier, increases on day 15, 30, 45...
+    lastPayday: 0,     // gameDay of last payday
+  },
+  portfolio: {},
+  wallet: {},
+  realtyOwned: {},
+  bizOwned: {},
+  empOwned: {},
+  luxOwned: {},
+  loans: [],
+  achievements: {},
+  priceHistory: {},
+  eventLog: [],
+};
+
+// =============================================
+// GAME DATA  — rebalanced for $500 start
+// =============================================
+const BUSINESSES = [
+  {id:'kiosk',    name:'Газетный киоск',  emoji:'🏪', cost:200,      income:0.5,   desc:'Продажа газет и журналов'},
+  {id:'carwash',  name:'Автомойка',       emoji:'🚗', cost:800,      income:1.8,   desc:'Ручная мойка автомобилей'},
+  {id:'cafe',     name:'Кафе',            emoji:'☕', cost:3000,     income:6,     desc:'Уютное кафе'},
+  {id:'market',   name:'Магазин',         emoji:'🛒', cost:10000,    income:18,    desc:'Продуктовый магазин'},
+  {id:'hotel',    name:'Мини-отель',      emoji:'🏨', cost:40000,    income:65,    desc:'Небольшая гостиница'},
+  {id:'resto',    name:'Ресторан',        emoji:'🍽', cost:120000,   income:180,   desc:'Ресторан высокой кухни'},
+  {id:'gym',      name:'Фитнес-клуб',     emoji:'🏋', cost:300000,   income:420,   desc:'Сеть спортзалов'},
+  {id:'factory',  name:'Завод',           emoji:'🏭', cost:800000,   income:1000,  desc:'Производственный завод'},
+  {id:'it',       name:'IT Компания',     emoji:'💻', cost:2000000,  income:2400,  desc:'Разработка ПО'},
+  {id:'bank',     name:'Банк',            emoji:'🏦', cost:8000000,  income:8000,  desc:'Частный банк'},
+  {id:'media',    name:'Медиахолдинг',    emoji:'📺', cost:20000000, income:18000, desc:'ТВ, радио, интернет'},
+  {id:'corp',     name:'Корпорация',      emoji:'🏢', cost:80000000, income:60000, desc:'Многонациональная корпорация'},
+];
+
+const REALTY = [
+  {id:'village',   name:'Деревня',           emoji:'🏡',country:'Казахстан', region:'Азия',          cost:1500,    income:2,    flag:'🇰🇿'},
+  {id:'shymkent',  name:'Шымкент',           emoji:'🏙',country:'Казахстан', region:'Азия',          cost:8000,    income:10,   flag:'🇰🇿'},
+  {id:'almaty',    name:'Алматы',            emoji:'🌆',country:'Казахстан', region:'Азия',          cost:25000,   income:30,   flag:'🇰🇿'},
+  {id:'astana',    name:'Астана',            emoji:'🏰',country:'Казахстан', region:'Азия',          cost:60000,   income:70,   flag:'🇰🇿'},
+  {id:'moscow',    name:'Москва',            emoji:'🏯',country:'Россия',    region:'Европа',        cost:200000,  income:220,  flag:'🇷🇺'},
+  {id:'spb',       name:'С.-Петербург',      emoji:'🎭',country:'Россия',    region:'Европа',        cost:150000,  income:160,  flag:'🇷🇺'},
+  {id:'dubai',     name:'Дубай',             emoji:'🌇',country:'ОАЭ',       region:'Ближний Восток',cost:600000,  income:650,  flag:'🇦🇪'},
+  {id:'abudhabi',  name:'Абу-Даби',          emoji:'🕌',country:'ОАЭ',       region:'Ближний Восток',cost:450000,  income:500,  flag:'🇦🇪'},
+  {id:'nyc',       name:'Нью-Йорк',          emoji:'🗽',country:'США',       region:'Америка',       cost:2000000, income:2200, flag:'🇺🇸'},
+  {id:'la',        name:'Лос-Анджелес',      emoji:'🌴',country:'США',       region:'Америка',       cost:1500000, income:1600, flag:'🇺🇸'},
+  {id:'miami',     name:'Майами',            emoji:'🏖',country:'США',       region:'Америка',       cost:1000000, income:1100, flag:'🇺🇸'},
+  {id:'london',    name:'Лондон',            emoji:'🎡',country:'Великобр.', region:'Европа',        cost:3000000, income:3200, flag:'🇬🇧'},
+  {id:'paris',     name:'Париж',             emoji:'🗼',country:'Франция',   region:'Европа',        cost:2500000, income:2700, flag:'🇫🇷'},
+  {id:'monaco',    name:'Монако',            emoji:'🎰',country:'Монако',    region:'Европа',        cost:8000000, income:9000, flag:'🇲🇨'},
+  {id:'tokyo',     name:'Токио',             emoji:'⛩',country:'Япония',    region:'Азия',          cost:4000000, income:4400, flag:'🇯🇵'},
+  {id:'singapore', name:'Сингапур',          emoji:'🦁',country:'Сингапур',  region:'Азия',          cost:5000000, income:5500, flag:'🇸🇬'},
+];
+
+const STOCKS = [
+  {id:'techcorp', name:'TechCorp',  sector:'Технологии',     price:50,   vol:0.07},
+  {id:'bankpro',  name:'BankPro',   sector:'Финансы',        price:120,  vol:0.05},
+  {id:'autostar', name:'AutoStar',  sector:'Авто',           price:80,   vol:0.06},
+  {id:'oilking',  name:'OilKing',   sector:'Нефть',          price:200,  vol:0.06},
+  {id:'pharmax',  name:'PharmAX',   sector:'Фарма',          price:160,  vol:0.08},
+  {id:'greentec', name:'GreenTec',  sector:'Зелёная энергия',price:40,   vol:0.11},
+  {id:'aitech',   name:'AI-Tech',   sector:'ИИ',             price:300,  vol:0.14},
+  {id:'spaceco',  name:'SpaceCo',   sector:'Космос',         price:800,  vol:0.17},
+  {id:'cryptbank',name:'CryptBank', sector:'Крипто',         price:250,  vol:0.13},
+  {id:'mediapro', name:'MediaPro',  sector:'Медиа',          price:60,   vol:0.06},
+];
+
+const CRYPTOS = [
+  {id:'btc', name:'Bitcoin',  symbol:'BTC', price:60000, vol:0.06,emoji:'₿'},
+  {id:'eth', name:'Ethereum', symbol:'ETH', price:3000,  vol:0.08,emoji:'Ξ'},
+  {id:'bnb', name:'BNB',      symbol:'BNB', price:400,   vol:0.10,emoji:'🔶'},
+  {id:'sol', name:'Solana',   symbol:'SOL', price:150,   vol:0.13,emoji:'◎'},
+  {id:'doge',name:'Dogecoin', symbol:'DOGE',price:0.15,  vol:0.20,emoji:'🐕'},
+  {id:'ada', name:'Cardano',  symbol:'ADA', price:0.6,   vol:0.15,emoji:'♾'},
+  {id:'ton', name:'TON',      symbol:'TON', price:5,     vol:0.12,emoji:'💎'},
+  {id:'shib',name:'Shiba Inu',symbol:'SHIB',price:0.00002,vol:0.24,emoji:'🐕‍🦺'},
+];
+
+const EMPLOYEES = [
+  {id:'manager',   name:'Менеджер',     emoji:'👔',cost:5000,   salaryPerSec:1,   incomeBonus:15,  maxCount:999},
+  {id:'accountant',name:'Бухгалтер',    emoji:'📊',cost:12000,  salaryPerSec:1.5, taxReduce:0.02,  maxCount:5},
+  {id:'lawyer',    name:'Юрист',        emoji:'⚖', cost:20000,  salaryPerSec:2,   incomeBonus:0,   maxCount:3},
+  {id:'marketer',  name:'Маркетолог',   emoji:'📣',cost:8000,   salaryPerSec:1.2, incomeBonus:10,  maxCount:999},
+  {id:'engineer',  name:'Инженер',      emoji:'🔧',cost:15000,  salaryPerSec:2,   incomeBonus:25,  maxCount:999},
+  {id:'pilot',     name:'Пилот',        emoji:'✈', cost:50000,  salaryPerSec:5,   req:'plane',     maxCount:4},
+  {id:'captain',   name:'Капитан яхты', emoji:'⚓',cost:35000,  salaryPerSec:4,   req:'yacht',     maxCount:2},
+  {id:'bodyguard', name:'Охранник',     emoji:'🕵',cost:3000,   salaryPerSec:0.5, incomeBonus:0,   maxCount:50},
+];
+
+const LUXURIES = [
+  {id:'car',    name:'Ferrari',           emoji:'🏎', cost:200000,    desc:'Суперкар мечты',             prestige:10},
+  {id:'mansion',name:'Особняк',           emoji:'🏰', cost:800000,    desc:'Особняк с бассейном',        prestige:30},
+  {id:'yacht',  name:'Яхта',             emoji:'🛥', cost:3000000,   desc:'Роскошная яхта 50м',         prestige:50},
+  {id:'art',    name:'Коллекция искусства',emoji:'🎨',cost:500000,    desc:'Картины Пикассо и Дали',     prestige:20},
+  {id:'watch',  name:'Коллекция часов',   emoji:'⌚',cost:80000,     desc:'Patek Philippe & Rolex',      prestige:8},
+  {id:'plane',  name:'Частный самолёт',   emoji:'✈', cost:8000000,   desc:'Бизнес-джет Gulfstream',     prestige:100},
+  {id:'island', name:'Остров',            emoji:'🏝', cost:30000000,  desc:'Частный остров',             prestige:300},
+  {id:'rocket', name:'Космическая ракета',emoji:'🚀',cost:150000000, desc:'Личная орбитальная ракета',   prestige:1000},
+];
+
+const LOANS = [
+  {id:'micro', name:'Микрозайм',     amount:2000,    ratePerSec:0.04,  desc:'Быстро, дорого — для старта'},
+  {id:'small', name:'Малый кредит',  amount:15000,   ratePerSec:0.25,  desc:'Для развития бизнеса'},
+  {id:'medium',name:'Бизнес-кредит', amount:150000,  ratePerSec:2,     desc:'Масштабируйтесь быстрее'},
+  {id:'large', name:'Корпоративный', amount:2000000, ratePerSec:20,    desc:'Для крупных игроков'},
+];
+
+const ACHIEVEMENTS = [
+  {id:'first10k',  name:'Первые $10K',     emoji:'💵',desc:'Заработайте $10,000',         check:()=>G.totalEarned>=10000},
+  {id:'first100k', name:'$100K',           emoji:'💰',desc:'Заработайте $100,000',        check:()=>G.totalEarned>=100000},
+  {id:'first1m',   name:'Миллионер',       emoji:'💎',desc:'Заработайте $1,000,000',      check:()=>G.totalEarned>=1000000},
+  {id:'first10m',  name:'10 миллионов',    emoji:'🏆',desc:'Заработайте $10,000,000',     check:()=>G.totalEarned>=10000000},
+  {id:'first1b',   name:'Миллиардер!',     emoji:'👑',desc:'Заработайте $1,000,000,000',  check:()=>G.totalEarned>=1000000000},
+  {id:'biz3',      name:'Предприниматель', emoji:'🏢',desc:'Купите 3 разных бизнеса',     check:()=>Object.keys(G.bizOwned).length>=3},
+  {id:'biz_all',   name:'Магнат',          emoji:'🏭',desc:'Купите все бизнесы',          check:()=>BUSINESSES.every(b=>G.bizOwned[b.id])},
+  {id:'realty5',   name:'Землевладелец',   emoji:'🌍',desc:'Недвижимость в 5 городах',    check:()=>Object.keys(G.realtyOwned).length>=5},
+  {id:'stocks10',  name:'Инвестор',        emoji:'📈',desc:'Купите 10 акций',             check:()=>Object.values(G.portfolio).reduce((a,b)=>a+b,0)>=10},
+  {id:'crypto3',   name:'Криптоэнтузиаст', emoji:'🪙',desc:'Купите 3 вида крипты',        check:()=>Object.keys(G.wallet).filter(k=>G.wallet[k]>0).length>=3},
+  {id:'emp10',     name:'Работодатель',    emoji:'👥',desc:'Наймите 10 сотрудников',      check:()=>Object.values(G.empOwned).reduce((a,b)=>a+b,0)>=10},
+  {id:'yacht_own', name:'Морской волк',    emoji:'⚓',desc:'Купите яхту',                 check:()=>G.luxOwned['yacht']},
+  {id:'plane_own', name:'Авиамагнат',      emoji:'✈',desc:'Купите самолёт',              check:()=>G.luxOwned['plane']},
+  {id:'island_own',name:'Властелин острова',emoji:'🏝',desc:'Купите остров',             check:()=>G.luxOwned['island']},
+  {id:'survived',  name:'Антикризисник',   emoji:'🛡',desc:'Переживите экономический кризис',check:()=>G.achievements['survived']},
+  {id:'day100',    name:'100 дней',        emoji:'📅',desc:'Проведите 100 игровых дней',  check:()=>G.gameDay>=100},
+  {id:'parttime15',name:'Трудяга',         emoji:'⚒',desc:'Получите 15 зарплат по подработке',check:()=>(G.parttime.paydayCount||0)>=15},
+];
+
+const RANKS = [
+  {min:0,          name:'Бедняк',          color:'#6b7280'},
+  {min:5000,       name:'Рабочий',         color:'#9ca3af'},
+  {min:50000,      name:'Предприниматель',  color:'#10b981'},
+  {min:500000,     name:'Бизнесмен',       color:'#3b82f6'},
+  {min:5000000,    name:'Инвестор',        color:'#a855f7'},
+  {min:50000000,   name:'Магнат',          color:'#f59e0b'},
+  {min:500000000,  name:'Миллиардер',      color:'#ef4444'},
+  {min:5000000000, name:'Олигарх',         color:'#ffd700'},
+  {min:1e12,       name:'Мировой босс',    color:'#ff6ef7'},
+];
+
+// =============================================
+// INIT
+// =============================================
+function init(){
+  STOCKS.forEach(s=>{ G.priceHistory[s.id]=[s.price]; });
+  CRYPTOS.forEach(c=>{ G.priceHistory[c.id]=[c.price]; });
+  loadGame();
+  renderAll();
+  setInterval(gameTick, 1000);
+  setInterval(renderTicker, 600);
+  renderTicker();
+}
+
+// =============================================
+// PARTTIME WORK
+// =============================================
+function getParttimeWage(){
+  // Base wage grows with game progression
+  const base = 20 + Math.floor(G.gameDay / 5) * 5;
+  // Every 15 game days paydayBonus increases by 1
+  const bonus = G.parttime.paydayBonus || 1;
+  return Math.floor(base * bonus);
+}
+
+function doParttime(){
+  if(G.parttime.cooldownLeft > 0) return;
+  const wage = getParttimeWage();
+  G.money += wage;
+  G.totalEarned += wage;
+  G.parttime.cooldownLeft = G.parttime.COOLDOWN;
+  toast(`💼 Подработал! +${fmt(wage)}`,'success');
+  addEvent(`💼 Подработка: +${fmt(wage)}`,'success');
+  document.getElementById('parttime-btn').disabled = true;
+  updateParttimeUI();
+  updateHeader();
+}
+
+function updateParttimeUI(){
+  const cd = G.parttime.cooldownLeft;
+  const btn = document.getElementById('parttime-btn');
+  const cdEl = document.getElementById('parttime-cooldown');
+  const wage = getParttimeWage();
+  if(cd > 0){
+    btn.disabled = true;
+    cdEl.textContent = `⏱ ${cd}с | +${fmt(wage)}`;
+  } else {
+    btn.disabled = false;
+    cdEl.textContent = `готово! +${fmt(wage)}`;
+  }
+}
+
+// Payday: every 15 game days the parttime multiplier increases
+function checkPayday(){
+  const daysSinceLast = G.gameDay - (G.parttime.lastPayday || 0);
+  if(daysSinceLast >= 15){
+    G.parttime.lastPayday = G.gameDay;
+    G.parttime.paydayBonus = (G.parttime.paydayBonus || 1) + 0.5;
+    G.parttime.paydayCount = (G.parttime.paydayCount || 0) + 1;
+    const bonus = G.parttime.paydayBonus;
+    // Show payday banner briefly
+    const banner = document.getElementById('payday-banner');
+    banner.textContent = `💰 ДЕНЬ ЗАРПЛАТЫ! Подработка теперь платит x${bonus.toFixed(1)} — День ${G.gameDay}`;
+    banner.style.display = 'block';
+    setTimeout(()=>{ banner.style.display='none'; }, 5000);
+    toast(`🎉 Зарплата! Подработка x${bonus.toFixed(1)}`,'warning');
+    addEvent(`💰 День ${G.gameDay}: Коэффициент подработки вырос до x${bonus.toFixed(1)}`,'warning');
+  }
+}
+
+// =============================================
+// TICK
+// =============================================
+function gameTick(){
+  G.tick++;
+  G.gameDay = G.tick; // 1 second = 1 game day
+
+  // Countdown parttime cooldown
+  if(G.parttime.cooldownLeft > 0){
+    G.parttime.cooldownLeft--;
+    updateParttimeUI();
+  }
+
+  // Check payday every 15 game days
+  checkPayday();
+
+  // Update market prices
+  STOCKS.forEach(s=>{
+    const crisis = G.crisis ? 1.8 : 1;
+    s.price = Math.max(1, s.price*(1+(Math.random()*2-1)*s.vol*0.25*crisis));
+    G.priceHistory[s.id].push(s.price);
+    if(G.priceHistory[s.id].length>20) G.priceHistory[s.id].shift();
+  });
+  CRYPTOS.forEach(c=>{
+    const crisis = G.crisis ? 2.2 : 1;
+    c.price = Math.max(0.000001, c.price*(1+(Math.random()*2-1)*c.vol*0.4*crisis));
+    G.priceHistory[c.id].push(c.price);
+    if(G.priceHistory[c.id].length>20) G.priceHistory[c.id].shift();
+  });
+
+  // Economic crisis — rarer, after day 30
+  if(!G.crisis && G.gameDay>30 && Math.random()<0.002){
+    G.crisis=true; G.crisisTimer=45;
+    document.getElementById('crisis-banner').style.display='block';
+    addEvent('⚠ ЭКОНОМИЧЕСКИЙ КРИЗИС начался!','warning');
+    toast('⚠ Кризис!','warning');
+  }
+  if(G.crisis){
+    G.crisisTimer--;
+    if(G.crisisTimer<=0){
+      G.crisis=false;
+      document.getElementById('crisis-banner').style.display='none';
+      G.achievements['survived'] = true;
+      addEvent('✅ Кризис позади. Экономика восстанавливается','success');
+      toast('✅ Кризис завершён!','success');
+    }
+  }
+
+  computeIncome();
+
+  const net = (G.passive - G.expenses) * (G.crisis ? 0.5 : 1);
+  G.money += net;
+  if(net>0) G.totalEarned += net;
+
+  // Pay loans
+  G.loans.forEach(l=>{
+    const pay = Math.min(l.ratePerSec, l.remaining);
+    l.remaining -= pay;
+    G.money -= pay;
+  });
+  G.loans = G.loans.filter(l=>l.remaining>0);
+
+  // Bankruptcy warning
+  if(G.money < 0 && G.loans.length===0){
+    G.money = 0;
+    toast('⚠ Банкротство предотвращено — баланс обнулён','error');
+  }
+
+  checkAchievements();
+
+  if(G.tick%60===0) saveGame();
+
+  updateHeader();
+  updateActivePanel();
+}
+
+function computeIncome(){
+  let bInc=0, rInc=0, eSalary=0;
+  const managerBonus  = (G.empOwned['manager']  ||0)*15;
+  const marketerBonus = (G.empOwned['marketer'] ||0)*10;
+  const engineerBonus = (G.empOwned['engineer'] ||0)*25;
+  const totalBonus = 1 + (managerBonus+marketerBonus+engineerBonus)*0.001;
+
+  BUSINESSES.forEach(b=>{
+    const qty=G.bizOwned[b.id]||0;
+    if(qty>0) bInc+=b.income*qty*totalBonus;
+  });
+  REALTY.forEach(r=>{
+    const qty=G.realtyOwned[r.id]||0;
+    if(qty>0) rInc+=r.income*qty;
+  });
+  EMPLOYEES.forEach(e=>{
+    eSalary+=e.salaryPerSec*(G.empOwned[e.id]||0);
+  });
+
+  const accountants=G.empOwned['accountant']||0;
+  G.taxRate=Math.max(0.05,0.20-accountants*0.02);
+  const gross=bInc+rInc;
+  G.passive=gross*(1-G.taxRate);
+  G.expenses=eSalary;
+  const el=document.getElementById('tax-rate');
+  if(el) el.textContent=Math.round(G.taxRate*100)+'%';
+}
+
+// =============================================
+// RENDER
+// =============================================
+function renderAll(){
+  renderBizGrid();
+  renderRealtyGrid();
+  renderStocks();
+  renderCrypto();
+  renderEmployees();
+  renderLuxury();
+  renderLoans();
+  renderAchievements();
+  updateHeader();
+  updateOverview();
+}
+
+function updateActivePanel(){
+  const id=document.querySelector('.panel.active')?.id?.replace('panel-','');
+  if(id==='stocks')       renderStocks();
+  else if(id==='crypto')  renderCrypto();
+  else if(id==='overview')updateOverview();
+  else if(id==='loans')   renderLoans();
+}
+
+function updateHeader(){
+  const net=G.passive-G.expenses;
+  const year=Math.floor((G.gameDay-1)/365)+1;
+  const dayOfYear=((G.gameDay-1)%365)+1;
+  document.getElementById('h-money').textContent=fmt(G.money);
+  document.getElementById('h-income').textContent=fmt(G.passive)+'/с';
+  document.getElementById('h-expense').textContent=fmt(G.expenses)+'/с';
+  document.getElementById('h-net').textContent=(net>=0?'+':'')+fmt(net)+'/с';
+  document.getElementById('h-day').textContent=dayOfYear;
+  document.getElementById('h-year').textContent=year;
+  const rank=getRank();
+  document.getElementById('h-rank').textContent=rank.name;
+  document.getElementById('h-rank').style.color=rank.color;
+  updateParttimeUI();
+}
+
+function updateOverview(){
+  const rank=getRank();
+  document.getElementById('rank-display').textContent=rank.name;
+  document.getElementById('rank-display').style.color=rank.color;
+  document.getElementById('total-earned').textContent=fmt(G.totalEarned);
+
+  const nextIdx=RANKS.findIndex(r=>r.min>G.totalEarned);
+  if(nextIdx>0){
+    const cur=RANKS[nextIdx-1], nxt=RANKS[nextIdx];
+    const pct=Math.min(100,((G.totalEarned-cur.min)/(nxt.min-cur.min))*100);
+    document.getElementById('rank-bars').innerHTML=
+      `<div style="font-size:0.75rem;color:var(--muted);margin-bottom:4px">До "${nxt.name}": ${fmtShort(Math.max(0,nxt.min-G.totalEarned))}</div>
+       <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>`;
+  }
+
+  // Time summary
+  const year=Math.floor((G.gameDay-1)/365)+1;
+  const dayOfYear=((G.gameDay-1)%365)+1;
+  const nextPayday=G.parttime.lastPayday+15;
+  const daysLeft=Math.max(0,nextPayday-G.gameDay);
+  document.getElementById('time-summary').innerHTML=`
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:0.85rem">
+      <div style="background:var(--card2);border-radius:8px;padding:10px;text-align:center">
+        <div style="color:var(--muted);font-size:0.72rem">ИГРОВОЙ ДЕНЬ</div>
+        <div style="font-family:'Orbitron',monospace;font-size:1.3rem;color:var(--purple)">${dayOfYear}</div>
+      </div>
+      <div style="background:var(--card2);border-radius:8px;padding:10px;text-align:center">
+        <div style="color:var(--muted);font-size:0.72rem">ГОД</div>
+        <div style="font-family:'Orbitron',monospace;font-size:1.3rem;color:var(--purple)">${year}</div>
+      </div>
+      <div style="background:var(--card2);border-radius:8px;padding:10px;text-align:center">
+        <div style="color:var(--muted);font-size:0.72rem">ЗАРПЛАТА ЧЕРЕЗ</div>
+        <div style="font-family:'Orbitron',monospace;font-size:1.1rem;color:var(--gold)">${daysLeft} дн.</div>
+      </div>
+      <div style="background:var(--card2);border-radius:8px;padding:10px;text-align:center">
+        <div style="color:var(--muted);font-size:0.72rem">МНОЖИТЕЛЬ x</div>
+        <div style="font-family:'Orbitron',monospace;font-size:1.1rem;color:var(--green)">${(G.parttime.paydayBonus||1).toFixed(1)}</div>
+      </div>
+    </div>
+    <div style="margin-top:8px;font-size:0.78rem;color:var(--muted);background:var(--card2);border-radius:8px;padding:8px">
+      💼 Подработка приносит: <b style="color:var(--green)">${fmt(getParttimeWage())}</b> за клик<br>
+      ⏱ Каждые 15 дней коэффициент +0.5
+    </div>`;
+
+  // Financial summary
+  const net=G.passive-G.expenses;
+  const loanPay=G.loans.reduce((a,l)=>a+l.ratePerSec,0);
+  document.getElementById('fin-summary').innerHTML=`
+    <div class="rating-bar"><span class="rating-label">Пассивный доход</span><div class="rating-track"><div class="rating-fill" style="width:${Math.min(100,G.passive/100)}%"></div></div><span style="font-size:0.78rem;color:var(--green)">${fmt(G.passive)}/с</span></div>
+    <div class="rating-bar"><span class="rating-label">Налоги (${Math.round(G.taxRate*100)}%)</span><div class="rating-track" style="background:rgba(255,71,87,0.15)"><div class="rating-fill" style="width:${Math.round(G.taxRate*100)}%;background:linear-gradient(90deg,#dc2626,#ef4444)"></div></div><span style="font-size:0.78rem;color:var(--red)">-${fmt((G.passive/(1-G.taxRate))*G.taxRate)}/с</span></div>
+    <div class="rating-bar"><span class="rating-label">Зарплаты</span><div class="rating-track" style="background:rgba(255,71,87,0.1)"><div class="rating-fill" style="width:${Math.min(100,G.expenses/50)}%;background:linear-gradient(90deg,#7c3aed,#a855f7)"></div></div><span style="font-size:0.78rem;color:var(--red)">-${fmt(G.expenses)}/с</span></div>
+    <div style="display:flex;justify-content:space-between;padding:6px 0;border-top:1px solid var(--border);margin-top:4px">
+      <span style="color:var(--muted)">Чистый доход</span>
+      <span style="color:${net>=0?'var(--green)':'var(--red)'};font-weight:700">${net>=0?'+':''}${fmt(net)}/с</span>
+    </div>`;
+
+  // Tips
+  const tips=[];
+  if(G.money<200 && !G.bizOwned['kiosk'])       tips.push('💡 Нажмите "Подработать" чтобы накопить на первый бизнес!');
+  if(G.money>=200 && !G.bizOwned['kiosk'])       tips.push('💡 Купите Газетный киоск за $200 — первый пассивный доход!');
+  if(G.bizOwned['kiosk'] && !G.bizOwned['cafe']) tips.push('💡 Копите на Кафе ($3,000) — доход сильно вырастет');
+  if(G.taxRate>=0.18)                            tips.push('💡 Наймите Бухгалтера чтобы снизить налоги до 16%');
+  if(Object.keys(G.bizOwned).length===0)         tips.push('💡 Начните с подработки — кликайте кнопку каждые 8 секунд');
+  if(G.loans.length===0 && G.money<1000)         tips.push('💡 Микрозайм ($2,000) поможет ускорить старт');
+  if(tips.length===0)                            tips.push('🚀 Вы отлично справляетесь! Продолжайте расширять империю!');
+  document.getElementById('tips-box').innerHTML=tips.slice(0,3).join('<br>');
+}
+
+function renderBizGrid(){
+  document.getElementById('biz-grid').innerHTML=BUSINESSES.map(b=>{
+    const owned=G.bizOwned[b.id]||0;
+    const cost=Math.floor(b.cost*(1+owned*0.4));
+    const canAfford=G.money>=cost;
+    return `<div class="biz-card">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:5px">
+        <span style="font-size:1.5rem">${b.emoji}</span>
+        <div><h3>${b.name}</h3><div class="info">${b.desc}</div></div>
+      </div>
+      ${owned>0?`<div style="color:var(--green);font-size:0.82rem;margin-bottom:5px">✅ ${owned} шт | Доход: ${fmt(b.income*owned*(1-G.taxRate))}/с</div>`:''}
+      <div style="display:flex;justify-content:space-between;font-size:0.78rem;color:var(--muted);margin-bottom:7px">
+        <span>Цена: <b style="color:var(--gold)">${fmt(cost)}</b></span>
+        <span>+<b style="color:var(--green)">${fmt(b.income*(1-G.taxRate))}/с</b></span>
+      </div>
+      <button class="btn btn-gold btn-sm" onclick="buyBiz('${b.id}')" ${canAfford?'':'disabled'}>${owned?'⬆ Расширить':'🛒 Купить'}</button>
+      ${owned>0?`<button class="btn btn-red btn-sm" onclick="sellBiz('${b.id}')" style="margin-left:5px">💸 Продать</button>`:''}
+    </div>`;
+  }).join('');
+}
+
+function renderRealtyGrid(){
+  const regions=['Все',...new Set(REALTY.map(r=>r.region))];
+  document.getElementById('region-filters').innerHTML=regions.map(r=>
+    `<button class="btn btn-blue btn-sm" onclick="filterRealty('${r}')">${r}</button>`
+  ).join('');
+  renderRealtyCards('Все');
+}
+
+let activeRegion='Все';
+function filterRealty(r){ activeRegion=r; renderRealtyCards(r); }
+
+function renderRealtyCards(region){
+  const list=region==='Все'?REALTY:REALTY.filter(r=>r.region===region);
+  document.getElementById('realty-grid').innerHTML=list.map(r=>{
+    const owned=G.realtyOwned[r.id]||0;
+    const cost=Math.floor(r.cost*(1+owned*0.2));
+    return `<div class="country-card ${owned?'owned':''}">
+      <div style="display:flex;align-items:center;gap:7px">
+        <span style="font-size:1.8rem">${r.flag}</span>
+        <div><h4>${r.emoji} ${r.name}</h4><div class="details">${r.country} · ${r.region}</div></div>
+      </div>
+      ${owned?`<span class="tag tag-green" style="margin-top:5px;display:inline-block">✅ ${owned} объект</span>`:''}
+      <div style="font-size:0.75rem;color:var(--muted);margin:5px 0">
+        ${fmt(cost)} | <span style="color:var(--green)">+${fmt(r.income)}/с</span>
+      </div>
+      <button class="btn btn-gold btn-sm" onclick="buyRealty('${r.id}')" ${G.money>=cost?'':'disabled'}>${owned?'⬆ Ещё':'🏠 Купить'}</button>
+      ${owned?`<button class="btn btn-red btn-sm" onclick="sellRealty('${r.id}')" style="margin-left:5px">💸</button>`:''}
+    </div>`;
+  }).join('');
+}
+
+function renderStocks(){
+  let pv=0;
+  STOCKS.forEach(s=>{pv+=(G.portfolio[s.id]||0)*s.price;});
+  document.getElementById('portfolio-val').textContent=fmt(pv);
+  document.getElementById('stocks-list').innerHTML=STOCKS.map(s=>{
+    const hist=G.priceHistory[s.id]||[];
+    const prev=hist.length>1?hist[hist.length-2]:s.price;
+    const chg=s.price-prev, pct=((chg/prev)*100).toFixed(2);
+    const owned=G.portfolio[s.id]||0, up=chg>=0;
+    return `<div class="stock-row">
+      <span><b>${s.name}</b> <span class="tag tag-blue">${s.sector}</span></span>
+      <span style="font-family:'Orbitron',monospace;font-size:0.85rem">${fmtPrice(s.price)}</span>
+      <span class="${up?'price-up':'price-down'}">${up?'▲':'▼'}${Math.abs(pct)}%</span>
+      <span style="color:${owned>0?'var(--green)':'var(--muted)'}">${owned}</span>
+      <span>
+        <button class="btn btn-green btn-sm" onclick="buyStock('${s.id}')" ${G.money>=s.price?'':'disabled'}>Купить</button>
+        <button class="btn btn-red btn-sm" onclick="sellStock('${s.id}')" ${owned>0?'':'disabled'}>Продать</button>
+      </span>
+    </div>`;
+  }).join('');
+  const held=STOCKS.filter(s=>G.portfolio[s.id]>0);
+  document.getElementById('my-portfolio').innerHTML=held.length===0
+    ?'<div style="color:var(--muted);font-size:0.82rem">Портфель пуст</div>'
+    :held.map(s=>`<div class="emp-badge">${s.name}: ${G.portfolio[s.id]} = <b style="color:var(--blue)">${fmt(G.portfolio[s.id]*s.price)}</b></div>`).join('');
+}
+
+function renderCrypto(){
+  let wv=0;
+  CRYPTOS.forEach(c=>{wv+=(G.wallet[c.id]||0)*c.price;});
+  document.getElementById('wallet-val').textContent=fmt(wv);
+  document.getElementById('crypto-grid').innerHTML=CRYPTOS.map(c=>{
+    const hist=G.priceHistory[c.id]||[];
+    const prev=hist.length>1?hist[hist.length-2]:c.price;
+    const chg=c.price-prev,pct=((chg/prev)*100).toFixed(2);
+    const owned=G.wallet[c.id]||0,up=chg>=0;
+    return `<div class="crypto-card">
+      <div style="display:flex;align-items:center;gap:8px">
+        <span style="font-size:1.6rem">${c.emoji}</span>
+        <div><div style="font-weight:700">${c.name}</div><div style="font-size:0.72rem;color:var(--muted)">${c.symbol}</div></div>
+      </div>
+      <div class="crypto-price">${fmtPrice(c.price)}</div>
+      <div class="${up?'price-up':'price-down'}" style="font-size:0.78rem">${up?'▲':'▼'} ${Math.abs(pct)}%</div>
+      ${owned>0?`<div style="font-size:0.78rem;color:var(--green)">${owned} ${c.symbol}</div>`:''}
+      <div style="display:flex;gap:5px">
+        <button class="btn btn-green btn-sm" onclick="buyCrypto('${c.id}')" ${G.money>=c.price?'':'disabled'}>Купить</button>
+        <button class="btn btn-red btn-sm" onclick="sellCrypto('${c.id}')" ${owned>0?'':'disabled'}>Продать</button>
+      </div>
+    </div>`;
+  }).join('');
+  const held=CRYPTOS.filter(c=>G.wallet[c.id]>0);
+  document.getElementById('my-wallet').innerHTML=held.length===0
+    ?'<div style="color:var(--muted);font-size:0.82rem">Кошелёк пуст</div>'
+    :held.map(c=>`<div class="emp-badge">${c.emoji} ${c.symbol}: ${G.wallet[c.id]} = <b style="color:var(--blue)">${fmt(G.wallet[c.id]*c.price)}</b></div>`).join('');
+}
+
+function renderEmployees(){
+  const total=Object.values(G.empOwned).reduce((a,b)=>a+b,0);
+  const totalSal=EMPLOYEES.reduce((a,e)=>a+e.salaryPerSec*(G.empOwned[e.id]||0),0);
+  document.getElementById('emp-count').textContent=total;
+  document.getElementById('emp-salary-total').textContent=fmt(totalSal)+'/с';
+  document.getElementById('emp-grid').innerHTML=EMPLOYEES.map(e=>{
+    const owned=G.empOwned[e.id]||0;
+    const blocked=e.req&&!G.luxOwned[e.req];
+    const canAfford=G.money>=e.cost&&owned<(e.maxCount||999)&&!blocked;
+    return `<div class="emp-card">
+      <div style="display:flex;align-items:center;gap:9px;margin-bottom:7px">
+        <span style="font-size:1.6rem">${e.emoji}</span>
+        <div>
+          <div style="font-weight:700;font-size:0.9rem">${e.name}</div>
+          <div style="color:var(--red);font-size:0.78rem">-${fmt(e.salaryPerSec)}/с зарплата</div>
+        </div>
+        ${owned>0?`<span class="tag tag-green" style="margin-left:auto">${owned} чел.</span>`:''}
+      </div>
+      ${e.incomeBonus?`<div style="font-size:0.75rem;color:var(--green);margin-bottom:5px">📈 +${e.incomeBonus} к доходу каждый</div>`:''}
+      ${e.taxReduce?`<div style="font-size:0.75rem;color:var(--blue);margin-bottom:5px">📊 -${Math.round(e.taxReduce*100)}% налоги</div>`:''}
+      ${blocked?`<div style="font-size:0.75rem;color:var(--red);margin-bottom:5px">🔒 Требуется: ${e.req==='plane'?'Самолёт':'Яхта'}</div>`:''}
+      <div style="font-size:0.78rem;color:var(--muted);margin-bottom:7px">Найм: <b style="color:var(--gold)">${fmt(e.cost)}</b></div>
+      <button class="btn btn-gold btn-sm" onclick="hireEmp('${e.id}')" ${canAfford?'':'disabled'}>Нанять</button>
+      ${owned>0?`<button class="btn btn-red btn-sm" onclick="fireEmp('${e.id}')" style="margin-left:5px">Уволить</button>`:''}
+    </div>`;
+  }).join('');
+}
+
+function renderLuxury(){
+  const totalPrestige=LUXURIES.reduce((a,l)=>a+(G.luxOwned[l.id]?l.prestige:0),0);
+  document.getElementById('prestige-total').textContent=totalPrestige+' ⭐';
+  document.getElementById('luxury-grid').innerHTML=LUXURIES.map(l=>{
+    const owned=G.luxOwned[l.id];
+    return `<div class="luxury-card">
+      <span class="luxury-icon">${l.emoji}</span>
+      <div class="luxury-info">
+        <h3>${l.name} ${owned?'<span class="tag tag-green">✅</span>':''}</h3>
+        <p>${l.desc}</p>
+        <p style="color:var(--gold);font-size:0.78rem;margin-top:3px">+${l.prestige}⭐ | ${fmt(l.cost)}</p>
+      </div>
+      <button class="btn ${owned?'btn-red':'btn-gold'} btn-sm" onclick="${owned?`sellLuxury('${l.id}')`:`buyLuxury('${l.id}')`}" ${(!owned&&G.money<l.cost)?'disabled':''}>
+        ${owned?'Продать':'Купить'}
+      </button>
+    </div>`;
+  }).join('');
+}
+
+function renderLoans(){
+  const totalDebt=G.loans.reduce((a,l)=>a+l.remaining,0);
+  const totalPay=G.loans.reduce((a,l)=>a+l.ratePerSec,0);
+  document.getElementById('debt-display').textContent=fmt(totalDebt);
+  document.getElementById('debt-payment').textContent=fmt(totalPay)+'/с';
+  const avail=LOANS.filter(l=>!G.loans.find(a=>a.id===l.id));
+  document.getElementById('loans-list').innerHTML=`
+    <div class="card"><div class="card-title">💳 Доступные кредиты</div>
+    ${avail.map(l=>`<div class="loan-row">
+      <div><b>${l.name}</b><div style="font-size:0.75rem;color:var(--muted)">${l.desc}</div></div>
+      <div style="text-align:right"><div style="color:var(--green)">${fmt(l.amount)}</div><div style="font-size:0.75rem;color:var(--red)">-${fmt(l.ratePerSec)}/с</div></div>
+      <button class="btn btn-blue btn-sm" onclick="takeLoan('${l.id}')">Взять</button>
+    </div>`).join('')}
+    </div>
+    ${G.loans.length>0?`<div class="card" style="margin-top:12px"><div class="card-title">📋 Активные долги</div>
+    ${G.loans.map(l=>`<div class="loan-row">
+      <div><b>${l.name}</b></div>
+      <div><span style="color:var(--red)">${fmt(l.remaining)}</span> осталось</div>
+      <div class="progress-bar" style="width:100px"><div class="progress-fill" style="width:${(1-l.remaining/l.total)*100}%;background:linear-gradient(90deg,var(--red),#f87171)"></div></div>
+    </div>`).join('')}</div>`:''}`;
+}
+
+function renderAchievements(){
+  document.getElementById('ach-count').textContent=ACHIEVEMENTS.filter(a=>G.achievements[a.id]).length;
+  document.getElementById('ach-total').textContent=ACHIEVEMENTS.length;
+  document.getElementById('ach-grid').innerHTML=ACHIEVEMENTS.map(a=>{
+    const done=G.achievements[a.id];
+    return `<div class="ach-card ${done?'unlocked':''}">
+      <div class="ach-icon" style="opacity:${done?1:0.25}">${a.emoji}</div>
+      <div class="ach-name" style="color:${done?'var(--gold)':'var(--muted)'}">${a.name}</div>
+      <div class="ach-desc">${a.desc}</div>
+      ${done?'<div style="color:var(--green);font-size:0.7rem;margin-top:3px">✅ Получено</div>':''}
+    </div>`;
+  }).join('');
+}
+
+function renderTicker(){
+  const items=[
+    ...STOCKS.map(s=>{
+      const h=G.priceHistory[s.id]||[];const p=h.length>1?h[h.length-2]:s.price;const up=s.price>=p;
+      return `<span class="tick-item ${up?'price-up':'price-down'}">${s.name}: ${fmtPrice(s.price)} ${up?'▲':'▼'}</span>`;
+    }),
+    ...CRYPTOS.map(c=>{
+      const h=G.priceHistory[c.id]||[];const p=h.length>1?h[h.length-2]:c.price;const up=c.price>=p;
+      return `<span class="tick-item ${up?'price-up':'price-down'}">${c.symbol}: ${fmtPrice(c.price)} ${up?'▲':'▼'}</span>`;
+    }),
+  ];
+  document.getElementById('ticker-inner').innerHTML=items.concat(items).join('');
+}
+
+// =============================================
+// ACTIONS
+// =============================================
+function buyBiz(id){
+  const b=BUSINESSES.find(x=>x.id===id);
+  const owned=G.bizOwned[id]||0;
+  const cost=Math.floor(b.cost*(1+owned*0.4));
+  if(G.money<cost){toast('Недостаточно средств!','error');return;}
+  G.money-=cost; G.bizOwned[id]=(owned+1);
+  computeIncome();
+  addEvent(`🏢 Куплен "${b.name}" (ур.${owned+1})`,'success');
+  toast(`✅ ${b.name} куплен!`,'success');
+  renderBizGrid(); updateHeader();
+}
+function sellBiz(id){
+  const b=BUSINESSES.find(x=>x.id===id);
+  const owned=G.bizOwned[id]||0; if(!owned) return;
+  const val=Math.floor(b.cost*(1+(owned-1)*0.4)*0.6);
+  G.money+=val; G.bizOwned[id]--;
+  if(!G.bizOwned[id]) delete G.bizOwned[id];
+  computeIncome(); toast(`💸 Продан за ${fmt(val)}`,'info');
+  renderBizGrid(); updateHeader();
+}
+function buyRealty(id){
+  const r=REALTY.find(x=>x.id===id);
+  const owned=G.realtyOwned[id]||0;
+  const cost=Math.floor(r.cost*(1+owned*0.2));
+  if(G.money<cost){toast('Недостаточно!','error');return;}
+  G.money-=cost; G.realtyOwned[id]=(owned+1);
+  computeIncome();
+  addEvent(`🏠 Куплена недвижимость в ${r.name}`,'success');
+  toast(`✅ ${r.name}!`,'success');
+  renderRealtyCards(activeRegion); updateHeader();
+}
+function sellRealty(id){
+  const r=REALTY.find(x=>x.id===id);
+  const owned=G.realtyOwned[id]||0; if(!owned) return;
+  const val=Math.floor(r.cost*(1+(owned-1)*0.2)*0.65);
+  G.money+=val; G.realtyOwned[id]--;
+  if(!G.realtyOwned[id]) delete G.realtyOwned[id];
+  computeIncome(); toast(`💸 Продана за ${fmt(val)}`,'info');
+  renderRealtyCards(activeRegion); updateHeader();
+}
+function buyStock(id){
+  const s=STOCKS.find(x=>x.id===id);
+  if(G.money<s.price){toast('Недостаточно!','error');return;}
+  G.money-=s.price; G.portfolio[id]=(G.portfolio[id]||0)+1;
+  toast(`📈 Куплена акция ${s.name}`,'success');
+  renderStocks(); updateHeader();
+}
+function sellStock(id){
+  const s=STOCKS.find(x=>x.id===id);
+  if(!(G.portfolio[id]>0)){toast('Нет акций!','error');return;}
+  G.portfolio[id]--; G.money+=s.price;
+  if(!G.portfolio[id]) delete G.portfolio[id];
+  toast(`💸 Продана за ${fmt(s.price)}`,'info');
+  renderStocks(); updateHeader();
+}
+function buyCrypto(id){
+  const c=CRYPTOS.find(x=>x.id===id);
+  if(G.money<c.price){toast('Недостаточно!','error');return;}
+  G.money-=c.price; G.wallet[id]=(G.wallet[id]||0)+1;
+  toast(`🪙 Куплен ${c.symbol}`,'success');
+  renderCrypto(); updateHeader();
+}
+function sellCrypto(id){
+  const c=CRYPTOS.find(x=>x.id===id);
+  if(!(G.wallet[id]>0)){toast('Нет монет!','error');return;}
+  G.wallet[id]--; G.money+=c.price;
+  if(!G.wallet[id]) delete G.wallet[id];
+  toast(`💸 Продан ${c.symbol} за ${fmt(c.price)}`,'info');
+  renderCrypto(); updateHeader();
+}
+function hireEmp(id){
+  const e=EMPLOYEES.find(x=>x.id===id);
+  const owned=G.empOwned[id]||0;
+  if(owned>=(e.maxCount||999)){toast('Лимит!','error');return;}
+  if(e.req&&!G.luxOwned[e.req]){toast('Нужно: '+e.req,'error');return;}
+  if(G.money<e.cost){toast('Недостаточно!','error');return;}
+  G.money-=e.cost; G.empOwned[id]=(owned+1);
+  computeIncome();
+  addEvent(`👤 Нанят ${e.name}`,'info');
+  toast(`✅ ${e.name} нанят!`,'success');
+  renderEmployees(); updateHeader();
+}
+function fireEmp(id){
+  const e=EMPLOYEES.find(x=>x.id===id);
+  if(!(G.empOwned[id]>0)) return;
+  G.empOwned[id]--;
+  G.money+=Math.floor(e.cost*0.25);
+  if(!G.empOwned[id]) delete G.empOwned[id];
+  computeIncome(); toast(`Уволен ${e.name}`,'info');
+  renderEmployees(); updateHeader();
+}
+function buyLuxury(id){
+  const l=LUXURIES.find(x=>x.id===id);
+  if(G.money<l.cost){toast('Недостаточно!','error');return;}
+  G.money-=l.cost; G.luxOwned[id]=true;
+  addEvent(`✨ Куплено: ${l.name}`,'success');
+  toast(`🎉 ${l.name}! +${l.prestige}⭐`,'success');
+  renderLuxury(); renderEmployees(); updateHeader();
+}
+function sellLuxury(id){
+  const l=LUXURIES.find(x=>x.id===id);
+  if(!G.luxOwned[id]) return;
+  G.money+=Math.floor(l.cost*0.5); delete G.luxOwned[id];
+  toast(`💸 ${l.name} продан`,'info');
+  renderLuxury(); updateHeader();
+}
+function takeLoan(id){
+  const l=LOANS.find(x=>x.id===id);
+  if(G.loans.find(a=>a.id===id)){toast('Уже есть!','error');return;}
+  G.money+=l.amount;
+  G.loans.push({id:l.id,name:l.name,remaining:l.amount,ratePerSec:l.ratePerSec,total:l.amount});
+  addEvent(`🏦 Кредит: ${l.name} +${fmt(l.amount)}`,'warning');
+  toast(`💳 +${fmt(l.amount)}`,'info');
+  renderLoans(); updateHeader();
+}
+
+// =============================================
+// UTILS
+// =============================================
+function getRank(){
+  for(let i=RANKS.length-1;i>=0;i--){if(G.totalEarned>=RANKS[i].min)return RANKS[i];}
+  return RANKS[0];
+}
+function fmt(n){
+  if(n===undefined||n===null||isNaN(n))return '$0';
+  n=Math.floor(n);
+  if(Math.abs(n)>=1e12)return '$'+(n/1e12).toFixed(2)+'T';
+  if(Math.abs(n)>=1e9)return '$'+(n/1e9).toFixed(2)+'B';
+  if(Math.abs(n)>=1e6)return '$'+(n/1e6).toFixed(2)+'M';
+  if(Math.abs(n)>=1e3)return '$'+(n/1e3).toFixed(1)+'K';
+  return '$'+n.toLocaleString();
+}
+function fmtShort(n){
+  if(n>=1e12)return (n/1e12).toFixed(1)+'T';
+  if(n>=1e9)return (n/1e9).toFixed(1)+'B';
+  if(n>=1e6)return (n/1e6).toFixed(1)+'M';
+  if(n>=1e3)return (n/1e3).toFixed(1)+'K';
+  return Math.floor(n).toString();
+}
+function fmtPrice(n){
+  if(n>=1000)return '$'+n.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g,',');
+  if(n>=1)return '$'+n.toFixed(2);
+  if(n>=0.01)return '$'+n.toFixed(4);
+  return '$'+n.toFixed(8);
+}
+function addEvent(msg,type='info'){
+  G.eventLog.unshift({msg,type,time:`День ${G.gameDay}`});
+  if(G.eventLog.length>50)G.eventLog.pop();
+  const el=document.getElementById('event-log');
+  if(el) el.innerHTML=G.eventLog.slice(0,12).map(e=>`
+    <div style="display:flex;gap:7px;align-items:flex-start">
+      <span style="color:var(--muted);font-size:0.7rem;white-space:nowrap">${e.time}</span>
+      <span style="color:${e.type==='success'?'var(--green)':e.type==='warning'?'var(--gold)':e.type==='error'?'var(--red)':'var(--blue)'};font-size:0.8rem">${e.msg}</span>
+    </div>`).join('');
+}
+function toast(msg,type='info'){
+  const el=document.createElement('div');
+  el.className=`toast ${type}`;el.textContent=msg;
+  document.getElementById('toast-container').appendChild(el);
+  setTimeout(()=>el.remove(),3100);
+}
+function checkAchievements(){
+  let changed=false;
+  ACHIEVEMENTS.forEach(a=>{
+    if(!G.achievements[a.id]&&a.check()){
+      G.achievements[a.id]=true; changed=true;
+      toast(`🏆 ${a.name}!`,'warning');
+      addEvent(`🏆 Достижение: "${a.name}"`,'warning');
+    }
+  });
+  if(changed) renderAchievements();
+}
+function showTab(name,el){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('panel-'+name).classList.add('active');
+  if(name==='stocks')        renderStocks();
+  else if(name==='crypto')   renderCrypto();
+  else if(name==='business') renderBizGrid();
+  else if(name==='realty')   renderRealtyCards(activeRegion);
+  else if(name==='employees')renderEmployees();
+  else if(name==='luxury')   renderLuxury();
+  else if(name==='loans')    renderLoans();
+  else if(name==='achievements')renderAchievements();
+  else if(name==='overview') updateOverview();
+}
+
+// =============================================
+// SAVE / LOAD / RESET
+// =============================================
+function saveGame(){
+  localStorage.setItem('bizEmpire3',JSON.stringify({
+    money:G.money,totalEarned:G.totalEarned,tick:G.tick,gameDay:G.gameDay,
+    portfolio:G.portfolio,wallet:G.wallet,realtyOwned:G.realtyOwned,
+    bizOwned:G.bizOwned,empOwned:G.empOwned,luxOwned:G.luxOwned,
+    loans:G.loans,achievements:G.achievements,parttime:G.parttime,
+    stockPrices:STOCKS.reduce((o,s)=>({...o,[s.id]:s.price}),{}),
+    cryptoPrices:CRYPTOS.reduce((o,c)=>({...o,[c.id]:c.price}),{}),
+  }));
+  toast('💾 Сохранено!','info');
+}
+function loadGame(){
+  try{
+    const raw=localStorage.getItem('bizEmpire3');
+    if(!raw)return;
+    const s=JSON.parse(raw);
+    G.money=s.money??500; G.totalEarned=s.totalEarned??0;
+    G.tick=s.tick??0; G.gameDay=s.gameDay??1;
+    G.portfolio=s.portfolio??{}; G.wallet=s.wallet??{};
+    G.realtyOwned=s.realtyOwned??{}; G.bizOwned=s.bizOwned??{};
+    G.empOwned=s.empOwned??{}; G.luxOwned=s.luxOwned??{};
+    G.loans=s.loans??[]; G.achievements=s.achievements??{};
+    if(s.parttime) G.parttime={...G.parttime,...s.parttime};
+    if(s.stockPrices) STOCKS.forEach(st=>{if(s.stockPrices[st.id])st.price=s.stockPrices[st.id];});
+    if(s.cryptoPrices) CRYPTOS.forEach(c=>{if(s.cryptoPrices[c.id])c.price=s.cryptoPrices[c.id];});
+    computeIncome();
+    toast('✅ Загружено!','success');
+  }catch(e){console.error(e);}
+}
+function resetGame(){
+  if(!confirm('Сбросить всю игру? Прогресс будет потерян!'))return;
+  localStorage.removeItem('bizEmpire3');
+  STOCKS.forEach((s,i)=>{s.price=[50,120,80,200,160,40,300,800,250,60][i];});
+  CRYPTOS.forEach((c,i)=>{c.price=[60000,3000,400,150,0.15,0.6,5,0.00002][i];});
+  G={money:500,totalEarned:0,passive:0,expenses:0,tick:0,gameDay:1,crisis:false,crisisTimer:0,taxRate:0.20,
+     parttime:{cooldownLeft:0,COOLDOWN:8,paydayBonus:1,lastPayday:0,paydayCount:0},
+     portfolio:{},wallet:{},realtyOwned:{},bizOwned:{},empOwned:{},luxOwned:{},loans:[],achievements:{},priceHistory:{},eventLog:[]};
+  STOCKS.forEach(s=>{G.priceHistory[s.id]=[s.price];});
+  CRYPTOS.forEach(c=>{G.priceHistory[c.id]=[c.price];});
+  renderAll(); toast('🗑 Сброшено','warning');
+}
+
+init();
+</script>
+</body>
+</html>
