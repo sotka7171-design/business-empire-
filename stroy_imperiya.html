@@ -1,0 +1,1108 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Строй Империю — Симулятор строительного магната</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Courier New',monospace;background:#0a0e1a;color:#e0e8ff;min-height:100vh;overflow:hidden}
+:root{--gold:#f0c040;--red:#e05050;--green:#50e090;--blue:#5090e0;--gray:#8090a0;--dark:#0a0e1a;--panel:#111827;--border:#1e2d40}
+#game{display:grid;grid-template-columns:220px 1fr 200px;grid-template-rows:auto 1fr auto;height:100vh;gap:0}
+#topbar{grid-column:1/-1;background:#0d1520;border-bottom:1px solid var(--border);padding:8px 16px;display:flex;gap:16px;align-items:center;flex-wrap:wrap}
+.stat-pill{background:#1a2535;border:1px solid var(--border);border-radius:6px;padding:4px 10px;font-size:11px;display:flex;align-items:center;gap:6px}
+.stat-pill .val{font-weight:700;font-size:13px}
+.money{color:var(--gold)}.pos{color:var(--green)}.neg{color:var(--red)}.info{color:var(--blue)}
+#sidebar{background:var(--panel);border-right:1px solid var(--border);overflow-y:auto;padding:8px}
+#main{background:#080c14;overflow-y:auto;padding:12px}
+#rightbar{background:var(--panel);border-left:1px solid var(--border);overflow-y:auto;padding:8px}
+#statusbar{grid-column:1/-1;background:#0d1520;border-top:1px solid var(--border);padding:4px 16px;font-size:11px;color:var(--gray);display:flex;justify-content:space-between}
+.panel-title{font-size:10px;letter-spacing:2px;color:var(--gray);padding:6px 4px 4px;border-bottom:1px solid var(--border);margin-bottom:6px;text-transform:uppercase}
+.menu-btn{width:100%;background:transparent;border:1px solid var(--border);color:#c0d0e0;padding:6px 8px;border-radius:4px;cursor:pointer;font-size:11px;text-align:left;margin-bottom:3px;font-family:inherit;transition:all .15s}
+.menu-btn:hover{background:#1a2535;border-color:var(--blue)}
+.menu-btn.active{background:#1a2535;border-color:var(--gold);color:var(--gold)}
+.card{background:#111827;border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:8px}
+.card h3{font-size:12px;color:var(--gold);margin-bottom:8px;letter-spacing:1px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px}
+.item-btn{background:#1a2535;border:1px solid var(--border);border-radius:6px;padding:8px;cursor:pointer;font-size:11px;color:#c0d0e0;text-align:center;transition:all .15s;font-family:inherit}
+.item-btn:hover{border-color:var(--gold);color:var(--gold)}
+.item-btn .price{color:var(--gold);font-size:10px;display:block;margin-top:2px}
+.item-btn .icon{font-size:18px;display:block;margin-bottom:2px}
+.progress-bar{background:#1a2535;border-radius:3px;height:6px;margin:3px 0}
+.progress-fill{height:100%;border-radius:3px;transition:width .3s}
+.news-item{font-size:10px;color:#8090a0;padding:4px 0;border-bottom:1px solid #1a2535}
+.news-item span{color:var(--gold)}
+.worker-row{display:flex;align-items:center;justify-content:space-between;padding:3px 0;font-size:11px;border-bottom:1px solid #1a2535}
+.btn-small{background:#1a2535;border:1px solid var(--border);border-radius:3px;color:#c0d0e0;padding:2px 6px;cursor:pointer;font-size:10px;font-family:inherit}
+.btn-small:hover{border-color:var(--red);color:var(--red)}
+.btn-action{background:#1a4070;border:1px solid var(--blue);border-radius:4px;color:#c0d8f0;padding:6px 12px;cursor:pointer;font-size:11px;font-family:inherit;margin:2px;transition:all .15s}
+.btn-action:hover{background:#1a5090;border-color:#70b0f0}
+.btn-action.danger{background:#401a1a;border-color:var(--red);color:#f0c0c0}
+.btn-action.success{background:#1a4030;border-color:var(--green);color:#c0f0d0}
+.modal{display:none;position:absolute;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.8);z-index:999;justify-content:center;align-items:center}
+.modal.open{display:flex}
+.modal-box{background:#111827;border:1px solid var(--gold);border-radius:12px;padding:20px;max-width:480px;width:90%;max-height:80vh;overflow-y:auto}
+.modal-box h2{color:var(--gold);margin-bottom:12px;font-size:14px;letter-spacing:2px}
+.input-row{display:flex;gap:8px;margin:8px 0;align-items:center;flex-wrap:wrap}
+.input-row label{font-size:11px;color:var(--gray);min-width:80px}
+input[type=number],input[type=text],select{background:#1a2535;border:1px solid var(--border);border-radius:4px;color:#e0e8ff;padding:4px 8px;font-size:11px;font-family:inherit;width:100%}
+.alert{background:#2a1a10;border:1px solid #e07030;border-radius:6px;padding:8px 12px;margin:6px 0;font-size:11px;color:#f0c0a0}
+.alert.success{background:#0a2a1a;border-color:var(--green);color:#a0f0c0}
+.tab-row{display:flex;gap:4px;margin-bottom:10px;flex-wrap:wrap}
+.tab{background:transparent;border:1px solid var(--border);border-radius:4px;color:var(--gray);padding:4px 10px;cursor:pointer;font-size:10px;font-family:inherit}
+.tab.active{background:#1a2535;border-color:var(--gold);color:var(--gold)}
+.roulette-cell{width:34px;height:34px;border-radius:4px;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;cursor:pointer;margin:1px;transition:all .15s}
+.roulette-cell:hover{transform:scale(1.1)}
+.tag{display:inline-block;background:#1a2535;border:1px solid var(--border);border-radius:3px;padding:1px 6px;font-size:10px;margin:1px}
+#gameover{display:none;position:absolute;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.95);z-index:9999;justify-content:center;align-items:center;flex-direction:column;font-size:20px;color:var(--red);text-align:center}
+#gameover.show{display:flex}
+#wrapper{position:relative;width:100%;height:100vh;overflow:hidden}
+</style>
+</head>
+<body>
+<div id="wrapper">
+<div id="gameover">
+  <div style="font-size:36px;margin-bottom:16px">💀 БАНКРОТСТВО</div>
+  <div id="gameover-msg" style="font-size:14px;color:#8090a0;margin-bottom:20px"></div>
+  <button class="btn-action" onclick="resetGame()">НАЧАТЬ ЗАНОВО</button>
+</div>
+
+<div id="game">
+<div id="topbar">
+  <div style="font-size:13px;font-weight:700;color:var(--gold);letter-spacing:2px;margin-right:8px">🏗 СТРОЙ ИМПЕРИЮ</div>
+  <div class="stat-pill"><span>💰</span><span class="val money" id="hud-money">$50,000</span></div>
+  <div class="stat-pill"><span>📅</span><span class="val info" id="hud-date">01 Янв 2024</span></div>
+  <div class="stat-pill"><span>🏢</span><span class="val" id="hud-rep">Репутация: 50</span></div>
+  <div class="stat-pill"><span>👷</span><span class="val" id="hud-workers">0 рабочих</span></div>
+  <div class="stat-pill"><span>🍔</span><span class="val" id="hud-hunger">Сытость: 100%</span></div>
+  <div class="stat-pill"><span>❤️</span><span class="val" id="hud-health">Здоровье: 100%</span></div>
+  <div class="stat-pill"><span>😊</span><span class="val" id="hud-mood">Настроение: 80%</span></div>
+  <div class="stat-pill" id="hud-family-pill" style="display:none"><span>👨‍👩‍👧</span><span class="val pos" id="hud-family">Семья</span></div>
+  <div style="margin-left:auto;font-size:11px;color:var(--gray)" id="hud-debt"></div>
+</div>
+
+<div id="sidebar">
+  <div class="panel-title">МЕНЮ</div>
+  <button class="menu-btn active" onclick="showSection('dashboard',this)">🏠 Главная</button>
+  <button class="menu-btn" onclick="showSection('orders',this)">📋 Заказы</button>
+  <button class="menu-btn" onclick="showSection('workers',this)">👷 Персонал</button>
+  <button class="menu-btn" onclick="showSection('equipment',this)">⛏️ Техника</button>
+  <button class="menu-btn" onclick="showSection('property',this)">🏠 Недвижимость</button>
+  <button class="menu-btn" onclick="showSection('transport',this)">🚗 Транспорт</button>
+  <button class="menu-btn" onclick="showSection('business',this)">💼 Бизнес</button>
+  <button class="menu-btn" onclick="showSection('casino',this)">🎰 Казино</button>
+  <button class="menu-btn" onclick="showSection('bank',this)">🏦 Банк & Акции</button>
+  <button class="menu-btn" onclick="showSection('life',this)">❤️ Личная жизнь</button>
+  <button class="menu-btn" onclick="showSection('city',this)">🌆 Город</button>
+  <div class="panel-title" style="margin-top:8px">ВРЕМЯ</div>
+  <div style="font-size:10px;color:var(--gray);padding:4px">
+    <div style="margin-bottom:4px">Скорость игры:</div>
+    <div style="display:flex;gap:4px">
+      <button class="btn-small" onclick="setSpeed(0)">⏸ Пауза</button>
+      <button class="btn-small" onclick="setSpeed(1)">▶ Норм</button>
+      <button class="btn-small" onclick="setSpeed(3)">⏩ Быстро</button>
+    </div>
+  </div>
+  <div class="panel-title" style="margin-top:8px">СТАТУС</div>
+  <div id="sidebar-status" style="font-size:10px;color:var(--gray);padding:4px"></div>
+</div>
+
+<div id="main">
+  <!-- DASHBOARD -->
+  <div id="sec-dashboard" class="section">
+    <div class="card">
+      <h3>📊 ФИНАНСОВЫЙ ОБЗОР</h3>
+      <div class="grid3">
+        <div style="text-align:center;padding:6px;background:#1a2535;border-radius:6px">
+          <div style="font-size:10px;color:var(--gray)">Баланс</div>
+          <div class="money" id="d-money" style="font-size:16px;font-weight:700">$0</div>
+        </div>
+        <div style="text-align:center;padding:6px;background:#1a2535;border-radius:6px">
+          <div style="font-size:10px;color:var(--gray)">Долги</div>
+          <div class="neg" id="d-debt" style="font-size:16px;font-weight:700">$0</div>
+        </div>
+        <div style="text-align:center;padding:6px;background:#1a2535;border-radius:6px">
+          <div style="font-size:10px;color:var(--gray)">Доход/мес</div>
+          <div id="d-income" style="font-size:16px;font-weight:700">$0</div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <h3>🏗 АКТИВНЫЕ ПРОЕКТЫ</h3>
+      <div id="active-projects-list"><div style="color:var(--gray);font-size:11px">Нет активных проектов. Возьмите заказ!</div></div>
+    </div>
+    <div class="card">
+      <h3>📰 НОВОСТИ ГОРОДА</h3>
+      <div id="news-list"></div>
+    </div>
+    <div class="card">
+      <h3>⚠️ КРИЗИСЫ & СОБЫТИЯ</h3>
+      <div id="crisis-list"><div style="color:var(--gray);font-size:11px">Всё спокойно...</div></div>
+    </div>
+  </div>
+
+  <!-- ORDERS -->
+  <div id="sec-orders" class="section" style="display:none">
+    <div class="card"><h3>📋 ДОСТУПНЫЕ ЗАКАЗЫ</h3><div id="orders-list"></div></div>
+    <div class="card"><h3>🚧 МОИ ЗАКАЗЫ В РАБОТЕ</h3><div id="my-orders-list"></div></div>
+  </div>
+
+  <!-- WORKERS -->
+  <div id="sec-workers" class="section" style="display:none">
+    <div class="card">
+      <h3>👷 НАНЯТЬ ПЕРСОНАЛ</h3>
+      <div class="grid2">
+        <div class="item-btn" onclick="hireWorker('builder')"><span class="icon">🔨</span>Строитель<span class="price">$800/мес · найм $200</span></div>
+        <div class="item-btn" onclick="hireWorker('engineer')"><span class="icon">📐</span>Инженер<span class="price">$1500/мес · найм $500</span></div>
+        <div class="item-btn" onclick="hireWorker('driver')"><span class="icon">🚛</span>Водитель<span class="price">$900/мес · найм $300</span></div>
+        <div class="item-btn" onclick="hireWorker('manager')"><span class="icon">👔</span>Менеджер<span class="price">$2000/мес · найм $800</span></div>
+      </div>
+    </div>
+    <div class="card"><h3>👥 МОЙ ПЕРСОНАЛ</h3><div id="workers-list"></div></div>
+  </div>
+
+  <!-- EQUIPMENT -->
+  <div id="sec-equipment" class="section" style="display:none">
+    <div class="card">
+      <h3>🚜 СТРОИТЕЛЬНАЯ ТЕХНИКА</h3>
+      <div class="grid2">
+        <div class="item-btn" onclick="buyEquip('excavator')"><span class="icon">⛏️</span>Экскаватор<span class="price">$45,000</span></div>
+        <div class="item-btn" onclick="buyEquip('crane')"><span class="icon">🏗️</span>Кран башенный<span class="price">$120,000</span></div>
+        <div class="item-btn" onclick="buyEquip('concrete')"><span class="icon">🚛</span>Бетономешалка<span class="price">$35,000</span></div>
+        <div class="item-btn" onclick="buyEquip('bulldozer')"><span class="icon">🚧</span>Бульдозер<span class="price">$80,000</span></div>
+        <div class="item-btn" onclick="buyEquip('compressor')"><span class="icon">⚙️</span>Компрессор<span class="price">$8,000</span></div>
+        <div class="item-btn" onclick="buyEquip('scaffolding')"><span class="icon">🪜</span>Лесá (комплект)<span class="price">$12,000</span></div>
+      </div>
+    </div>
+    <div class="card"><h3>📦 МОЯ ТЕХНИКА</h3><div id="equip-list"></div></div>
+    <div class="card">
+      <h3>🗺️ КУПИТЬ УЧАСТОК</h3>
+      <div class="grid2">
+        <div class="item-btn" onclick="buyLand('small')"><span class="icon">📍</span>Малый участок<span class="price">$25,000 · 500 м²</span></div>
+        <div class="item-btn" onclick="buyLand('medium')"><span class="icon">📍</span>Средний участок<span class="price">$75,000 · 2000 м²</span></div>
+        <div class="item-btn" onclick="buyLand('large')"><span class="icon">📍</span>Большой участок<span class="price">$200,000 · 10000 м²</span></div>
+        <div class="item-btn" onclick="buyLand('industrial')"><span class="icon">🏭</span>Промышленный<span class="price">$500,000 · 50000 м²</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PROPERTY -->
+  <div id="sec-property" class="section" style="display:none">
+    <div class="card">
+      <h3>🏠 КУПИТЬ ЖИЛЬЁ</h3>
+      <div class="grid2">
+        <div class="item-btn" onclick="buyProperty('room')"><span class="icon">🛏️</span>Комната в общаге<span class="price">$5,000</span></div>
+        <div class="item-btn" onclick="buyProperty('apartment')"><span class="icon">🏢</span>Квартира 2к<span class="price">$80,000</span></div>
+        <div class="item-btn" onclick="buyProperty('penthouse')"><span class="icon">🌆</span>Пентхаус<span class="price">$500,000</span></div>
+        <div class="item-btn" onclick="buyProperty('house')"><span class="icon">🏡</span>Дом загородный<span class="price">$250,000</span></div>
+        <div class="item-btn" onclick="buyProperty('mansion')"><span class="icon">🏰</span>Особняк<span class="price">$2,000,000</span></div>
+        <div class="item-btn" onclick="buyProperty('villa')"><span class="icon">🌴</span>Вилла на море<span class="price">$1,500,000</span></div>
+      </div>
+    </div>
+    <div class="card"><h3>🏘️ МОЯ НЕДВИЖИМОСТЬ</h3><div id="property-list"></div></div>
+  </div>
+
+  <!-- TRANSPORT -->
+  <div id="sec-transport" class="section" style="display:none">
+    <div class="card">
+      <h3>🚗 АВТОМОБИЛИ</h3>
+      <div class="grid2">
+        <div class="item-btn" onclick="buyTransport('lada',3000)"><span class="icon">🚗</span>ВАЗ 2114<span class="price">$3,000</span></div>
+        <div class="item-btn" onclick="buyTransport('bmw',60000)"><span class="icon">🚘</span>BMW 5-Series<span class="price">$60,000</span></div>
+        <div class="item-btn" onclick="buyTransport('mercedes',180000)"><span class="icon">🚙</span>Mercedes G63<span class="price">$180,000</span></div>
+        <div class="item-btn" onclick="buyTransport('lamborghini',350000)"><span class="icon">🏎️</span>Lamborghini Urus<span class="price">$350,000</span></div>
+        <div class="item-btn" onclick="buyTransport('bugatti',3000000)"><span class="icon">🏎️</span>Bugatti Chiron<span class="price">$3,000,000</span></div>
+        <div class="item-btn" onclick="buyTransport('rolls',500000)"><span class="icon">👑</span>Rolls-Royce<span class="price">$500,000</span></div>
+      </div>
+    </div>
+    <div class="card">
+      <h3>✈️ АВИАЦИЯ</h3>
+      <div class="grid2">
+        <div class="item-btn" onclick="buyTransport('helicopter',800000)"><span class="icon">🚁</span>Вертолёт Bell<span class="price">$800,000</span></div>
+        <div class="item-btn" onclick="buyTransport('jet',5000000)"><span class="icon">✈️</span>Частный джет<span class="price">$5,000,000</span></div>
+      </div>
+    </div>
+    <div class="card"><h3>🚘 МОЙ ГАРАЖ</h3><div id="transport-list"></div></div>
+  </div>
+
+  <!-- BUSINESS -->
+  <div id="sec-business" class="section" style="display:none">
+    <div class="card">
+      <h3>💼 КУПИТЬ БИЗНЕС</h3>
+      <div class="grid2">
+        <div class="item-btn" onclick="buyBusiness('cafe',30000,2000)"><span class="icon">☕</span>Кафе<span class="price">$30,000 · доход $2k/мес</span></div>
+        <div class="item-btn" onclick="buyBusiness('shop',80000,5000)"><span class="icon">🛒</span>Магазин стройматериалов<span class="price">$80,000 · доход $5k/мес</span></div>
+        <div class="item-btn" onclick="buyBusiness('hotel',500000,25000)"><span class="icon">🏨</span>Отель<span class="price">$500,000 · доход $25k/мес</span></div>
+        <div class="item-btn" onclick="buyBusiness('factory',1200000,60000)"><span class="icon">🏭</span>Завод ЖБИ<span class="price">$1,200,000 · доход $60k/мес</span></div>
+        <div class="item-btn" onclick="buyBusiness('club',200000,12000)"><span class="icon">🎉</span>Ночной клуб<span class="price">$200,000 · доход $12k/мес</span></div>
+        <div class="item-btn" onclick="buyBusiness('gas',150000,8000)"><span class="icon">⛽</span>АЗС<span class="price">$150,000 · доход $8k/мес</span></div>
+      </div>
+    </div>
+    <div class="card"><h3>🏢 МОЙ БИЗНЕС</h3><div id="business-list"></div></div>
+  </div>
+
+  <!-- CASINO -->
+  <div id="sec-casino" class="section" style="display:none">
+    <div class="tab-row">
+      <button class="tab active" onclick="casinoTab('roulette',this)">🎯 Рулетка</button>
+      <button class="tab" onclick="casinoTab('slots',this)">🎰 Слоты</button>
+      <button class="tab" onclick="casinoTab('blackjack',this)">🃏 Блэкджек</button>
+    </div>
+    <div id="casino-roulette">
+      <div class="card">
+        <h3>🎯 РУЛЕТКА</h3>
+        <div id="roulette-board"></div>
+        <div style="margin:8px 0;font-size:11px;color:var(--gray)">Ставка на: <span id="bet-choice" style="color:var(--gold)">не выбрана</span></div>
+        <div class="input-row">
+          <label>Сумма:</label>
+          <input type="number" id="roulette-bet" value="1000" min="100" style="width:120px">
+          <button class="btn-action" onclick="spinRoulette()">КРУТИТЬ! 🎲</button>
+        </div>
+        <div id="roulette-result" style="min-height:32px;margin-top:8px;font-size:13px"></div>
+      </div>
+    </div>
+    <div id="casino-slots" style="display:none">
+      <div class="card">
+        <h3>🎰 СЛОТ-МАШИНА</h3>
+        <div id="slots-display" style="font-size:40px;text-align:center;padding:16px;background:#1a2535;border-radius:8px;margin:8px 0;letter-spacing:12px">🎰🎰🎰</div>
+        <div class="input-row">
+          <label>Ставка:</label>
+          <input type="number" id="slots-bet" value="500" min="100" style="width:120px">
+          <button class="btn-action" onclick="spinSlots()">ИГРАТЬ!</button>
+        </div>
+        <div id="slots-result" style="min-height:28px;margin-top:8px;text-align:center;font-size:13px"></div>
+      </div>
+    </div>
+    <div id="casino-blackjack" style="display:none">
+      <div class="card">
+        <h3>🃏 БЛЭКДЖЕК</h3>
+        <div style="margin-bottom:8px;font-size:12px;color:var(--gray)">Дилер: <span id="bj-dealer-cards">—</span></div>
+        <div style="margin-bottom:8px;font-size:12px">Вы: <span id="bj-player-cards">—</span></div>
+        <div id="bj-score" style="margin-bottom:8px;font-size:11px;color:var(--gray)"></div>
+        <div class="input-row">
+          <label>Ставка:</label>
+          <input type="number" id="bj-bet" value="2000" min="100" style="width:100px">
+          <button class="btn-action" onclick="bjDeal()">СДАТЬ</button>
+          <button class="btn-action" onclick="bjHit()" id="bj-hit" disabled>ЕЩЁ</button>
+          <button class="btn-action success" onclick="bjStand()" id="bj-stand" disabled>ХВАТИТ</button>
+        </div>
+        <div id="bj-result" style="min-height:28px;font-size:13px"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- BANK -->
+  <div id="sec-bank" class="section" style="display:none">
+    <div class="card">
+      <h3>🏦 КРЕДИТЫ</h3>
+      <div id="credit-status"></div>
+      <div class="grid2">
+        <div>
+          <div style="font-size:11px;color:var(--gray);margin-bottom:4px">Сумма кредита ($):</div>
+          <input type="number" id="loan-amount" value="50000" min="10000" step="10000">
+          <div style="font-size:10px;color:var(--gray);margin-top:4px">*Нужна репутация 40+ или залог</div>
+        </div>
+        <div>
+          <div style="font-size:11px;color:var(--gray);margin-bottom:4px">Срок:</div>
+          <select id="loan-term">
+            <option value="6">6 мес (18% год.)</option>
+            <option value="12" selected>12 мес (15% год.)</option>
+            <option value="24">24 мес (12% год.)</option>
+            <option value="36">36 мес (10% год.)</option>
+          </select>
+          <button class="btn-action" style="margin-top:6px;width:100%" onclick="takeLoan()">ВЗЯТЬ КРЕДИТ</button>
+        </div>
+      </div>
+      <div id="loan-result" style="margin-top:8px"></div>
+    </div>
+    <div class="card">
+      <h3>📋 МОИ КРЕДИТЫ</h3>
+      <div id="my-loans-list"></div>
+      <button class="btn-action success" style="margin-top:6px" onclick="payLoan()">ПОГАСИТЬ ДОСРОЧНО</button>
+    </div>
+    <div class="card">
+      <h3>📈 АКЦИИ</h3>
+      <div id="stocks-list"></div>
+      <div class="input-row" style="margin-top:8px">
+        <label>Тикер:</label>
+        <select id="stock-ticker" style="width:90px">
+          <option value="BUILD">BUILD</option>
+          <option value="REAL">REAL</option>
+          <option value="BANK">BANK</option>
+          <option value="OIL">OIL</option>
+        </select>
+        <label>Кол-во:</label>
+        <input type="number" id="stock-qty" value="10" min="1" style="width:60px">
+        <button class="btn-action" onclick="buyStock()">КУПИТЬ</button>
+        <button class="btn-action danger" onclick="sellStock()">ПРОДАТЬ</button>
+      </div>
+      <div id="stock-result" style="margin-top:6px;font-size:11px"></div>
+    </div>
+  </div>
+
+  <!-- LIFE -->
+  <div id="sec-life" class="section" style="display:none">
+    <div class="card">
+      <h3>👤 МОЙ ПЕРСОНАЖ</h3>
+      <div class="grid2">
+        <div style="font-size:11px">
+          <div style="margin-bottom:4px">Имя: <span style="color:var(--gold)">Алексей Строев</span></div>
+          <div style="margin-bottom:4px">Возраст: <span id="char-age">25</span> лет</div>
+          <div style="margin-bottom:8px">Статус: <span id="char-status" class="tag">Холост</span></div>
+          <div>Сытость: <div class="progress-bar"><div class="progress-fill" id="bar-hunger" style="width:100%;background:var(--green)"></div></div></div>
+          <div>Здоровье: <div class="progress-bar"><div class="progress-fill" id="bar-health" style="width:100%;background:var(--blue)"></div></div></div>
+          <div>Настроение: <div class="progress-bar"><div class="progress-fill" id="bar-mood" style="width:80%;background:var(--gold)"></div></div></div>
+        </div>
+        <div>
+          <button class="btn-action" onclick="eatFood()" style="display:block;width:100%;margin-bottom:4px">🍔 Поесть (-$50)</button>
+          <button class="btn-action" onclick="goDoctor()" style="display:block;width:100%;margin-bottom:4px">💊 Врач (-$200)</button>
+          <button class="btn-action" onclick="goRest()" style="display:block;width:100%;margin-bottom:4px">🛌 Отдохнуть</button>
+          <button class="btn-action" onclick="goGym()" style="display:block;width:100%">💪 Спортзал (-$30)</button>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <h3>💑 ЛИЧНАЯ ЖИЗНЬ</h3>
+      <div id="family-status">
+        <div style="font-size:11px;color:var(--gray);margin-bottom:8px">Вы пока одиноки. Познакомьтесь с кем-нибудь!</div>
+        <button class="btn-action" onclick="goDate()">💘 Сходить на свидание (-$300)</button>
+      </div>
+      <div id="relationship-info" style="margin-top:8px"></div>
+    </div>
+    <div class="card">
+      <h3>🎓 НАВЫКИ</h3>
+      <div id="skills-list"></div>
+      <div style="margin-top:6px">
+        <button class="btn-action" onclick="learnSkill('management')">📚 Менеджмент (-$2000)</button>
+        <button class="btn-action" onclick="learnSkill('engineering')">📐 Инженерия (-$3000)</button>
+        <button class="btn-action" onclick="learnSkill('finance')">💹 Финансы (-$2500)</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- CITY -->
+  <div id="sec-city" class="section" style="display:none">
+    <div class="card">
+      <h3>🌆 КАРТА ГОРОДА — СКАЙПИК</h3>
+      <div id="city-map" style="display:grid;grid-template-columns:repeat(6,1fr);gap:4px;padding:8px;background:#0a0e14;border-radius:8px"></div>
+    </div>
+    <div class="card"><h3>⚠️ ГОРОДСКИЕ КРИЗИСЫ</h3><div id="city-events"></div></div>
+    <div class="card"><h3>🤝 ВЛИЯТЕЛЬНЫЕ ЛЮДИ</h3><div id="influencers-list"></div></div>
+  </div>
+</div>
+
+<div id="rightbar">
+  <div class="panel-title">ФИНАНСЫ</div>
+  <div id="right-finance" style="font-size:10px;color:var(--gray)"></div>
+  <div class="panel-title" style="margin-top:8px">СОБЫТИЯ</div>
+  <div id="right-events" style="font-size:10px;color:var(--gray)"></div>
+  <div class="panel-title" style="margin-top:8px">РЕЙТИНГ</div>
+  <div id="right-rating" style="font-size:10px"></div>
+</div>
+
+<div id="statusbar">
+  <span id="status-msg">Добро пожаловать в Скайпик! Возьмите первый заказ и начните строить империю.</span>
+  <span id="status-time"></span>
+</div>
+</div>
+
+<!-- MODALS -->
+<div class="modal" id="modal-order">
+  <div class="modal-box">
+    <h2>📋 ПРИНЯТЬ ЗАКАЗ</h2>
+    <div id="modal-order-body"></div>
+    <div style="display:flex;gap:8px;margin-top:12px">
+      <button class="btn-action success" onclick="confirmOrder()">✅ ПРИНЯТЬ</button>
+      <button class="btn-action danger" onclick="closeModal('modal-order')">❌ ОТКАЗАТЬ</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="modal-notify">
+  <div class="modal-box">
+    <h2 id="modal-notify-title">📢 УВЕДОМЛЕНИЕ</h2>
+    <div id="modal-notify-body" style="font-size:12px;color:#c0d0e0;margin:8px 0"></div>
+    <button class="btn-action" onclick="closeModal('modal-notify')">OK</button>
+  </div>
+</div>
+</div>
+
+<script>
+const G={
+  money:50000,debt:0,rep:50,
+  day:1,month:1,year:2024,
+  hunger:100,health:100,mood:80,
+  age:25,speed:1,
+  workers:[],equipment:[],property:[],transport:[],businesses:[],
+  orders:[],activeOrders:[],loans:[],stocks:{},
+  skills:{management:0,engineering:0,finance:0},
+  relationship:null,married:false,children:0,partnerName:'',
+  lands:[],news:[],crises:[],
+  stockPrices:{BUILD:45,REAL:72,BANK:120,OIL:58},
+  influencers:[
+    {name:'Ибрагим Назаров',title:'Мэр города',relation:0},
+    {name:'Светлана Ким',title:'Застройщик №1',relation:0},
+    {name:'Борис Фёдоров',title:'Банкир',relation:0},
+    {name:'Дилнора Юсупова',title:'Архитектор',relation:0},
+  ],
+  cityZones:[
+    {name:'Рынок',icon:'🛒'},{name:'Парк',icon:'🌳'},
+    {name:'Офисы',icon:'🏢'},{name:'Жилой р-н',icon:'🏘'},
+    {name:'Завод',icon:'🏭'},{name:'Порт',icon:'⚓'},
+    {name:'Аэропорт',icon:'✈️'},{name:'Стадион',icon:'🏟'},
+    {name:'ТЦ',icon:'🛍'},{name:'Больница',icon:'🏥'},
+    {name:'Школа',icon:'🏫'},{name:'Казино р-н',icon:'🎲'},
+  ],
+  pendingOrder:null,bjDeck:[],bjPlayer:[],bjDealer:[],
+  tick:0,betChoice:null,totalEarned:0,totalSpent:0,gameOver:false
+};
+
+const ORDERS=[
+  {id:'o1',name:'Ремонт склада',client:'ООО Логистика',reward:15000,days:10,workers:2,equip:'none',desc:'Ремонт кровли и полов склада 500м²'},
+  {id:'o2',name:'Постройка гаража',client:'Частный клиент',reward:8000,days:7,workers:1,equip:'none',desc:'Гараж на 2 машины'},
+  {id:'o3',name:'Офисный ремонт',client:'ООО Инвест',reward:25000,days:14,workers:3,equip:'none',desc:'Отделка офиса 200м²'},
+  {id:'o4',name:'Жилой дом 5эт',client:'Горстрой',reward:120000,days:60,workers:5,equip:'crane',desc:'Пятиэтажный жилой дом'},
+  {id:'o5',name:'Торговый центр',client:'TrendMall',reward:500000,days:90,workers:10,equip:'crane',desc:'ТЦ 5000м² с подземным паркингом'},
+  {id:'o6',name:'Дорога к пригороду',client:'Горадминистрация',reward:200000,days:45,workers:8,equip:'bulldozer',desc:'3 км асфальтированной дороги'},
+  {id:'o7',name:'Пешеходный мост',client:'Парковое хоз-во',reward:80000,days:30,workers:4,equip:'crane',desc:'Мост через реку 50м'},
+  {id:'o8',name:'Котлован под завод',client:'ПромГрупп',reward:60000,days:20,workers:6,equip:'excavator',desc:'Земляные работы 3000м²'},
+  {id:'o9',name:'Снос здания',client:'РедевелопмГрупп',reward:35000,days:8,workers:3,equip:'bulldozer',desc:'Снос пятиэтажного здания'},
+  {id:'o10',name:'Коттеджный посёлок',client:'ЭлитСтрой',reward:800000,days:120,workers:15,equip:'crane',desc:'10 коттеджей + инфраструктура'},
+];
+
+const EQUIP_NAMES={excavator:'Экскаватор',crane:'Кран',concrete:'Бетономешалка',bulldozer:'Бульдозер',compressor:'Компрессор',scaffolding:'Лесá'};
+const EQUIP_PRICES={excavator:45000,crane:120000,concrete:35000,bulldozer:80000,compressor:8000,scaffolding:12000};
+const PROP_NAMES={room:'Комната',apartment:'Квартира',penthouse:'Пентхаус',house:'Дом',mansion:'Особняк',villa:'Вилла'};
+const PROP_PRICES={room:5000,apartment:80000,penthouse:500000,house:250000,mansion:2000000,villa:1500000};
+const WORKER_TYPES={builder:{name:'Строитель',salary:800},engineer:{name:'Инженер',salary:1500},driver:{name:'Водитель',salary:900},manager:{name:'Менеджер',salary:2000}};
+const WORKER_HIRE={builder:200,engineer:500,driver:300,manager:800};
+const TRANSPORT_NAMES={lada:'ВАЗ 2114',bmw:'BMW 5-Series',mercedes:'Mercedes G63',lamborghini:'Lamborghini Urus',bugatti:'Bugatti Chiron',rolls:'Rolls-Royce',helicopter:'Вертолёт Bell',jet:'Частный джет'};
+const TRANSPORT_ICONS={lada:'🚗',bmw:'🚘',mercedes:'🚙',lamborghini:'🏎️',bugatti:'🏎️',rolls:'👑',helicopter:'🚁',jet:'✈️'};
+const BIZ_NAMES={cafe:'Кафе',shop:'Магазин стройматериалов',hotel:'Отель',factory:'Завод ЖБИ',club:'Ночной клуб',gas:'АЗС'};
+
+let timer=null;
+let bizList=[];
+
+function fmt(n){return '$'+Math.abs(Math.round(n)).toLocaleString();}
+function fmtSign(n){return (n>=0?'+':'-')+'$'+Math.abs(Math.round(n)).toLocaleString();}
+
+function spend(n,reason){
+  if(G.money<n){notify('Недостаточно средств','Для "'+reason+'" нужно '+fmt(n)+', а у вас '+fmt(G.money));return false;}
+  G.money-=n;G.totalSpent+=n;updateHUD();return true;
+}
+function earn(n){G.money+=n;G.totalEarned+=n;updateHUD();}
+function setStatus(msg){document.getElementById('status-msg').textContent=msg;}
+function notify(title,body){
+  document.getElementById('modal-notify-title').textContent=title;
+  document.getElementById('modal-notify-body').textContent=body;
+  document.getElementById('modal-notify').classList.add('open');
+}
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+
+const MONTHS=['Янв','Фев','Мар','Апр','Май','Июн','Июл','Авг','Сен','Окт','Ноя','Дек'];
+function getDateStr(){return String(G.day).padStart(2,'0')+' '+MONTHS[G.month-1]+' '+G.year;}
+
+function updateHUD(){
+  if(G.gameOver)return;
+  document.getElementById('hud-money').textContent=fmt(G.money);
+  document.getElementById('hud-money').className='val '+(G.money<0?'neg':'money');
+  document.getElementById('hud-date').textContent=getDateStr();
+  document.getElementById('hud-rep').textContent='Репутация: '+G.rep;
+  document.getElementById('hud-workers').textContent=G.workers.length+' рабочих';
+  document.getElementById('hud-hunger').textContent='Сытость: '+Math.round(G.hunger)+'%';
+  document.getElementById('hud-health').textContent='Здоровье: '+Math.round(G.health)+'%';
+  document.getElementById('hud-mood').textContent='Настроение: '+Math.round(G.mood)+'%';
+  document.getElementById('hud-debt').textContent=G.debt>0?'Долг: -'+fmt(G.debt):'';
+  if(G.married||G.relationship){
+    document.getElementById('hud-family-pill').style.display='';
+    document.getElementById('hud-family').textContent=G.married?'Женат · '+G.partnerName:'Встречаюсь';
+  }
+  updateDashboard();updateSidebarStatus();checkGameOver();
+}
+
+function updateDashboard(){
+  document.getElementById('d-money').textContent=fmt(G.money);
+  document.getElementById('d-debt').textContent=fmt(G.debt);
+  const bizIncome=bizList.reduce((a,b)=>a+b.income,0);
+  const salary=G.workers.reduce((a,w)=>a+WORKER_TYPES[w.type].salary,0);
+  const loanPay=G.loans.reduce((a,l)=>a+l.monthly,0);
+  const net=bizIncome-salary-loanPay;
+  const dInc=document.getElementById('d-income');
+  dInc.textContent=fmtSign(net);
+  dInc.className=net>=0?'pos':'neg';
+  renderActiveOrders();renderNews();
+}
+
+function updateSidebarStatus(){
+  let txt='';
+  if(G.money<1000)txt+='<div class="neg">⚠️ Кризис наличных!</div>';
+  if(G.hunger<30)txt+='<div class="neg">😰 Вы голодаете!</div>';
+  if(G.health<30)txt+='<div class="neg">🚨 Нужен врач!</div>';
+  if(G.debt>G.money*3)txt+='<div class="neg">💀 Огромный долг!</div>';
+  if(G.workers.length===0&&G.activeOrders.length>0)txt+='<div style="color:var(--gold)">👷 Нужны рабочие!</div>';
+  if(!txt)txt='<div class="pos">✅ Всё в порядке</div>';
+  document.getElementById('sidebar-status').innerHTML=txt;
+}
+
+function checkGameOver(){
+  if(G.gameOver)return;
+  if(G.money<-5000&&G.loans.length===0){
+    G.gameOver=true;
+    document.getElementById('gameover').classList.add('show');
+    document.getElementById('gameover-msg').textContent='Баланс ушёл в минус без активных кредитов. Компания обанкротилась.';
+    clearInterval(timer);
+  }
+  if(G.health<=0){
+    G.gameOver=true;
+    document.getElementById('gameover').classList.add('show');
+    document.getElementById('gameover-msg').textContent='Ваш персонаж умер от истощения и болезней.';
+    clearInterval(timer);
+  }
+}
+
+function resetGame(){
+  Object.assign(G,{money:50000,debt:0,rep:50,day:1,month:1,year:2024,hunger:100,health:100,mood:80,age:25,speed:1,workers:[],equipment:[],property:[],transport:[],businesses:[],orders:[],activeOrders:[],loans:[],stocks:{},skills:{management:0,engineering:0,finance:0},relationship:null,married:false,children:0,partnerName:'',lands:[],news:[],crises:[],stockPrices:{BUILD:45,REAL:72,BANK:120,OIL:58},pendingOrder:null,bjDeck:[],bjPlayer:[],bjDealer:[],tick:0,betChoice:null,totalEarned:0,totalSpent:0,gameOver:false});
+  bizList=[];
+  document.getElementById('gameover').classList.remove('show');
+  startGame();
+}
+
+function showSection(s,btn){
+  document.querySelectorAll('.section').forEach(el=>el.style.display='none');
+  document.querySelectorAll('.menu-btn').forEach(el=>el.classList.remove('active'));
+  document.getElementById('sec-'+s).style.display='';
+  if(btn)btn.classList.add('active');
+  if(s==='orders')renderOrders();
+  if(s==='workers')renderWorkers();
+  if(s==='equipment')renderEquipment();
+  if(s==='property')renderProperty();
+  if(s==='transport')renderTransport();
+  if(s==='business')renderBusiness();
+  if(s==='bank')renderBank();
+  if(s==='life')renderLife();
+  if(s==='city')renderCity();
+  if(s==='casino')buildRoulette();
+}
+
+function renderOrders(){
+  const available=ORDERS.filter(o=>!G.activeOrders.find(a=>a.id===o.id));
+  const el=document.getElementById('orders-list');
+  el.innerHTML=available.length?available.map(o=>`
+    <div class="card" style="padding:10px;margin-bottom:6px">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start">
+        <div>
+          <div style="font-size:12px;color:var(--gold);margin-bottom:2px">${o.name}</div>
+          <div style="font-size:10px;color:var(--gray)">${o.client} · ${o.desc}</div>
+          <div style="margin-top:4px">
+            <span class="tag">👷 ${o.workers} рабочих</span>
+            <span class="tag">📅 ${o.days} дней</span>
+            ${o.equip!=='none'?'<span class="tag">🔧 '+EQUIP_NAMES[o.equip]+'</span>':''}
+          </div>
+        </div>
+        <div style="text-align:right;flex-shrink:0;margin-left:12px">
+          <div class="money" style="font-size:14px;font-weight:700">${fmt(o.reward)}</div>
+          <button class="btn-action success" onclick="openOrder('${o.id}')" style="margin-top:4px;font-size:10px;padding:4px 8px">ВЗЯТЬ</button>
+        </div>
+      </div>
+    </div>
+  `).join(''):'<div style="color:var(--gray);font-size:11px">Нет доступных заказов.</div>';
+  const myEl=document.getElementById('my-orders-list');
+  myEl.innerHTML=G.activeOrders.length?G.activeOrders.map(o=>`
+    <div class="card" style="padding:10px;margin-bottom:6px">
+      <div style="display:flex;justify-content:space-between">
+        <span style="font-size:12px;color:var(--gold)">${o.name}</span>
+        <span class="pos">${fmt(o.reward)}</span>
+      </div>
+      <div class="progress-bar" style="margin-top:6px"><div class="progress-fill" style="width:${Math.round((1-o.daysLeft/o.days)*100)}%;background:var(--blue)"></div></div>
+      <div style="font-size:10px;color:var(--gray);margin-top:2px">Осталось ${Math.ceil(o.daysLeft)} из ${o.days} дней</div>
+    </div>
+  `).join(''):'<div style="color:var(--gray);font-size:11px">Нет активных заказов.</div>';
+}
+
+function openOrder(id){
+  const o=ORDERS.find(x=>x.id===id);
+  G.pendingOrder=o;
+  const canW=G.workers.length>=o.workers;
+  const canE=o.equip==='none'||G.equipment.includes(o.equip);
+  document.getElementById('modal-order-body').innerHTML=`
+    <div class="alert ${canW&&canE?'success':''}"><b>${o.name}</b><br>Клиент: ${o.client}<br>${o.desc}</div>
+    <div style="font-size:12px;margin:8px 0">
+      <div>💰 Награда: <span class="money">${fmt(o.reward)}</span></div>
+      <div>📅 Срок: ${o.days} дней</div>
+      <div style="color:${canW?'var(--green)':'var(--red)'}">👷 Нужно ${o.workers} рабочих (у вас: ${G.workers.length})</div>
+      <div style="color:${canE?'var(--green)':'var(--red)'}">🔧 Техника: ${o.equip==='none'?'не нужна':(EQUIP_NAMES[o.equip]+' '+(canE?'✅':'❌'))}</div>
+    </div>
+    ${!canW||!canE?'<div class="alert">⚠️ Не все условия выполнены — заказ будет идти медленнее!</div>':''}
+  `;
+  document.getElementById('modal-order').classList.add('open');
+}
+
+function confirmOrder(){
+  if(!G.pendingOrder)return;
+  G.activeOrders.push({...G.pendingOrder,daysLeft:G.pendingOrder.days});
+  addNews('Взят заказ: '+G.pendingOrder.name,'📋');
+  setStatus('Заказ принят: '+G.pendingOrder.name);
+  closeModal('modal-order');renderOrders();
+}
+
+function renderActiveOrders(){
+  const el=document.getElementById('active-projects-list');
+  el.innerHTML=G.activeOrders.length?G.activeOrders.map(o=>`
+    <div style="padding:4px 0;border-bottom:1px solid var(--border)">
+      <div style="display:flex;justify-content:space-between;font-size:11px"><span>${o.name}</span><span class="pos">${fmt(o.reward)}</span></div>
+      <div class="progress-bar"><div class="progress-fill" style="width:${Math.round((1-o.daysLeft/o.days)*100)}%;background:var(--blue)"></div></div>
+      <div style="font-size:9px;color:var(--gray)">Ост. ${Math.ceil(o.daysLeft)} дн.</div>
+    </div>
+  `).join(''):'<div style="color:var(--gray);font-size:11px">Нет активных проектов.</div>';
+}
+
+function renderNews(){
+  document.getElementById('news-list').innerHTML=G.news.slice(-8).reverse().map(n=>`<div class="news-item">${n.icon} <span>${n.text}</span></div>`).join('');
+}
+function addNews(text,icon='📰'){G.news.push({text,icon});if(G.news.length>30)G.news.shift();renderNews();}
+
+function renderWorkers(){
+  const el=document.getElementById('workers-list');
+  el.innerHTML=G.workers.length?G.workers.map((w,i)=>`
+    <div class="worker-row">
+      <span>👷 ${WORKER_TYPES[w.type].name} #${i+1}</span>
+      <span style="color:var(--gray)">${fmt(WORKER_TYPES[w.type].salary)}/мес</span>
+      <button class="btn-small" onclick="fireWorker(${i})">Уволить</button>
+    </div>
+  `).join(''):'<div style="color:var(--gray);font-size:11px">Нет сотрудников.</div>';
+}
+function hireWorker(type){
+  if(!spend(WORKER_HIRE[type],'Найм сотрудника'))return;
+  G.workers.push({type});addNews('Нанят: '+WORKER_TYPES[type].name,'👷');
+  setStatus('Нанят '+WORKER_TYPES[type].name);renderWorkers();updateHUD();
+}
+function fireWorker(i){
+  const w=G.workers.splice(i,1)[0];addNews('Уволен: '+WORKER_TYPES[w.type].name,'🔴');
+  setStatus('Уволен');renderWorkers();updateHUD();
+}
+
+function renderEquipment(){
+  const el=document.getElementById('equip-list');
+  if(!G.equipment.length){el.innerHTML='<div style="color:var(--gray);font-size:11px">Нет техники.</div>';return;}
+  const c={};G.equipment.forEach(e=>c[e]=(c[e]||0)+1);
+  el.innerHTML=Object.entries(c).map(([k,v])=>`<div class="worker-row"><span>${EQUIP_NAMES[k]} ×${v}</span><span class="money">${fmt(EQUIP_PRICES[k]*v)}</span></div>`).join('');
+}
+function buyEquip(type){
+  if(!spend(EQUIP_PRICES[type],'Покупка техники'))return;
+  G.equipment.push(type);addNews('Куплен: '+EQUIP_NAMES[type],'🔧');
+  setStatus('Куплена техника: '+EQUIP_NAMES[type]);renderEquipment();updateHUD();
+}
+function buyLand(type){
+  const p={small:25000,medium:75000,large:200000,industrial:500000};
+  const n={small:'Малый',medium:'Средний',large:'Большой',industrial:'Промышленный'};
+  if(!spend(p[type],'Покупка участка'))return;
+  G.lands.push(type);G.rep=Math.min(100,G.rep+5);addNews('Куплен участок: '+n[type],'📍');
+  setStatus('Участок куплен!');updateHUD();
+}
+
+function renderProperty(){
+  const el=document.getElementById('property-list');
+  el.innerHTML=G.property.length?G.property.map(p=>`<div class="worker-row"><span>🏠 ${PROP_NAMES[p]}</span><span class="money">${fmt(PROP_PRICES[p])}</span></div>`).join(''):'<div style="color:var(--gray);font-size:11px">Нет недвижимости.</div>';
+}
+function buyProperty(type){
+  if(!spend(PROP_PRICES[type],'Покупка недвижимости'))return;
+  G.property.push(type);G.rep=Math.min(100,G.rep+Math.floor(PROP_PRICES[type]/50000));
+  G.mood=Math.min(100,G.mood+10);addNews('Куплено: '+PROP_NAMES[type],'🏠');
+  setStatus('Куплено: '+PROP_NAMES[type]);renderProperty();updateHUD();
+}
+
+function renderTransport(){
+  const el=document.getElementById('transport-list');
+  el.innerHTML=G.transport.length?G.transport.map(t=>`<div class="worker-row"><span>${TRANSPORT_ICONS[t]||'🚗'} ${TRANSPORT_NAMES[t]||t}</span></div>`).join(''):'<div style="color:var(--gray);font-size:11px">Нет транспорта.</div>';
+}
+function buyTransport(type,price){
+  if(!spend(price,'Покупка транспорта'))return;
+  G.transport.push(type);G.rep=Math.min(100,G.rep+Math.floor(price/100000));
+  G.mood=Math.min(100,G.mood+15);addNews('Куплено: '+TRANSPORT_NAMES[type],'🚗');
+  setStatus('Куплено: '+TRANSPORT_NAMES[type]);renderTransport();updateHUD();
+}
+
+function renderBusiness(){
+  const el=document.getElementById('business-list');
+  if(!bizList.length){el.innerHTML='<div style="color:var(--gray);font-size:11px">Нет бизнесов.</div>';return;}
+  const c={};bizList.forEach(b=>{c[b.type]=c[b.type]||{name:BIZ_NAMES[b.type],income:0,count:0};c[b.type].income+=b.income;c[b.type].count++;});
+  el.innerHTML=Object.entries(c).map(([k,v])=>`<div class="worker-row"><span>${BIZ_NAMES[k]} ×${v.count}</span><span class="pos">+${fmt(v.income)}/мес</span></div>`).join('');
+}
+function buyBusiness(type,price,income){
+  if(!spend(price,'Покупка бизнеса'))return;
+  bizList.push({type,income});G.businesses.push(type);G.rep=Math.min(100,G.rep+3);
+  addNews('Открыт: '+BIZ_NAMES[type],'💼');setStatus('Открыт: '+BIZ_NAMES[type]);
+  renderBusiness();updateHUD();
+}
+
+function renderBank(){
+  const canBorrow=G.rep>=40||G.property.length>0||G.money>=5000;
+  document.getElementById('credit-status').innerHTML=`<div class="alert ${canBorrow?'success':''}">
+    ${canBorrow?'✅ Банк готов рассмотреть заявку':'❌ Отказ: нужна репутация 40+ или залог (недвижимость) или баланс $5,000+'}
+  </div>`;
+  const lEl=document.getElementById('my-loans-list');
+  lEl.innerHTML=G.loans.length?G.loans.map((l,i)=>`
+    <div class="worker-row">
+      <span>Кредит #${i+1}: ${fmt(l.remaining)} осталось</span>
+      <span class="neg">${fmt(l.monthly)}/мес</span>
+    </div>
+  `).join(''):'<div style="color:var(--gray);font-size:11px">Нет кредитов.</div>';
+  document.getElementById('stocks-list').innerHTML=Object.entries(G.stockPrices).map(([t,p])=>`
+    <div class="worker-row">
+      <span style="color:var(--gold);font-weight:700">${t}</span>
+      <span>${fmt(p)}/акц</span>
+      <span style="color:var(--gray)">${G.stocks[t]||0} шт = ${fmt((G.stocks[t]||0)*p)}</span>
+    </div>
+  `).join('');
+}
+function takeLoan(){
+  const canBorrow=G.rep>=40||G.property.length>0||G.money>=5000;
+  if(!canBorrow){notify('Отказ банка','Нужна репутация 40+, залог или баланс от $5,000.');return;}
+  const amount=parseInt(document.getElementById('loan-amount').value)||50000;
+  const term=parseInt(document.getElementById('loan-term').value)||12;
+  const rates={6:0.18,12:0.15,24:0.12,36:0.10};
+  const rate=rates[term]||0.15;
+  const total=Math.round(amount*(1+rate*(term/12)));
+  const monthly=Math.round(total/term);
+  G.loans.push({amount,total,remaining:total,monthly,term});
+  G.debt+=total;earn(amount);
+  addNews('Взят кредит '+fmt(amount)+' на '+term+' мес.','🏦');
+  setStatus('Кредит одобрен: '+fmt(amount));
+  document.getElementById('loan-result').innerHTML='<div class="alert success">Кредит выдан! Ежемесячный платёж: '+fmt(monthly)+'</div>';
+  renderBank();updateHUD();
+}
+function payLoan(){
+  if(!G.loans.length){notify('Нет кредитов','У вас нет активных кредитов.');return;}
+  const l=G.loans[0];
+  if(!spend(l.remaining,'Погашение кредита'))return;
+  G.debt=Math.max(0,G.debt-l.remaining);G.loans.shift();G.rep=Math.min(100,G.rep+5);
+  addNews('Кредит досрочно погашен!','✅');setStatus('Кредит погашен! Репутация +5');
+  renderBank();updateHUD();
+}
+function buyStock(){
+  const t=document.getElementById('stock-ticker').value;
+  const qty=parseInt(document.getElementById('stock-qty').value)||1;
+  const price=G.stockPrices[t]*qty;
+  if(!spend(price,'Покупка акций'))return;
+  G.stocks[t]=(G.stocks[t]||0)+qty;
+  document.getElementById('stock-result').innerHTML='<span class="pos">Куплено '+qty+' акций '+t+' за '+fmt(price)+'</span>';
+  renderBank();updateHUD();
+}
+function sellStock(){
+  const t=document.getElementById('stock-ticker').value;
+  const qty=parseInt(document.getElementById('stock-qty').value)||1;
+  if((G.stocks[t]||0)<qty){notify('Нет акций','Недостаточно акций '+t);return;}
+  const price=G.stockPrices[t]*qty;
+  G.stocks[t]-=qty;earn(price);
+  document.getElementById('stock-result').innerHTML='<span class="pos">Продано '+qty+' акций '+t+' за '+fmt(price)+'</span>';
+  renderBank();updateHUD();
+}
+
+function renderLife(){
+  document.getElementById('char-age').textContent=G.age;
+  document.getElementById('char-status').textContent=G.married?'Женат':'Холост';
+  document.getElementById('bar-hunger').style.width=Math.round(G.hunger)+'%';
+  document.getElementById('bar-health').style.width=Math.round(G.health)+'%';
+  document.getElementById('bar-mood').style.width=Math.round(G.mood)+'%';
+  document.getElementById('skills-list').innerHTML=Object.entries(G.skills).map(([k,v])=>`
+    <div style="font-size:11px;margin:3px 0">${k}: <span class="tag">${['Новичок','Специалист','Эксперт','Мастер'][Math.min(v,3)]}</span></div>
+  `).join('');
+  const relEl=document.getElementById('relationship-info');
+  if(G.married){
+    relEl.innerHTML='<div class="alert success">💍 Вы женаты на '+G.partnerName+'!'+(G.children?' Детей: '+G.children:'')+'</div><button class="btn-action" onclick="haveKid()">👶 Завести ребёнка (+$500/мес)</button>';
+  } else if(G.relationship){
+    relEl.innerHTML='<div class="alert success">💕 Встречаетесь с '+G.partnerName+'!</div><button class="btn-action success" onclick="propose()">💍 Сделать предложение</button>';
+  }
+}
+function eatFood(){if(!spend(50,'Еда'))return;G.hunger=Math.min(100,G.hunger+40);G.mood=Math.min(100,G.mood+5);setStatus('Поели!');renderLife();updateHUD();}
+function goDoctor(){if(!spend(200,'Врач'))return;G.health=Math.min(100,G.health+30);setStatus('Здоровье улучшилось!');renderLife();updateHUD();}
+function goRest(){G.mood=Math.min(100,G.mood+20);G.health=Math.min(100,G.health+5);setStatus('Хорошо отдохнули!');renderLife();updateHUD();}
+function goGym(){if(!spend(30,'Спортзал'))return;G.health=Math.min(100,G.health+10);G.mood=Math.min(100,G.mood+5);setStatus('Отличная тренировка!');renderLife();updateHUD();}
+function goDate(){
+  if(!spend(300,'Свидание'))return;
+  const names=['Анастасия','Мария','Лейла','Динара','Алина','Камилла','Зарина'];
+  if(!G.relationship){
+    G.partnerName=names[Math.floor(Math.random()*names.length)];
+    G.relationship=true;G.mood=Math.min(100,G.mood+20);
+    addNews('Познакомились с '+G.partnerName+'!','💕');
+    notify('Новое знакомство!','Вы познакомились с '+G.partnerName+'! Она интересная и умная.');
+  } else {G.mood=Math.min(100,G.mood+10);setStatus('Приятный вечер с '+G.partnerName);}
+  renderLife();updateHUD();
+}
+function propose(){
+  if(!G.relationship){notify('Нет партнёра','Сначала познакомьтесь с кем-нибудь!');return;}
+  if(!G.property.length){notify('Отказ',''+G.partnerName+' говорит: "У тебя нет своего жилья!" Купи хотя бы квартиру.');return;}
+  G.married=true;G.mood=Math.min(100,G.mood+30);
+  addNews('Свадьба с '+G.partnerName+'!','💍');notify('Свадьба!','Поздравляем! Вы теперь в браке с '+G.partnerName+'!');
+  renderLife();updateHUD();
+}
+function haveKid(){
+  if(!G.married){notify('Нет','Сначала женитесь!');return;}
+  G.children++;G.mood=Math.min(100,G.mood+20);
+  addNews('Родился ребёнок! Семья растёт','👶');notify('Поздравляем!','Пополнение в семье! Расходы +$500/мес.');
+  renderLife();updateHUD();
+}
+function learnSkill(s){
+  const p={management:2000,engineering:3000,finance:2500};
+  if(!spend(p[s],'Обучение'))return;
+  G.skills[s]=Math.min(3,G.skills[s]+1);G.rep=Math.min(100,G.rep+3);
+  addNews('Прокачан навык: '+s,'📚');renderLife();updateHUD();
+}
+
+function renderCity(){
+  const mapEl=document.getElementById('city-map');
+  mapEl.innerHTML=G.cityZones.map((z,i)=>`
+    <div style="background:#111827;border:1px solid var(--border);border-radius:6px;padding:8px;text-align:center;cursor:pointer;font-size:18px" onclick="clickZone(${i})" title="${z.name}">
+      ${z.icon}<div style="font-size:9px;color:var(--gray);margin-top:2px">${z.name}</div>
+    </div>
+  `).join('');
+  const evEl=document.getElementById('city-events');
+  evEl.innerHTML=G.crises.length?G.crises.map(c=>`<div class="alert">⚠️ ${c}</div>`).join(''):'<div style="color:var(--gray);font-size:11px">Город живёт спокойно.</div>';
+  document.getElementById('influencers-list').innerHTML=G.influencers.map((inf,i)=>`
+    <div class="worker-row">
+      <span>👤 ${inf.name} <span class="tag">${inf.title}</span></span>
+      <span style="color:${inf.relation>0?'var(--green)':inf.relation<0?'var(--red)':'var(--gray)'}">
+        ${inf.relation>0?'👍 Союзник':inf.relation<0?'👎 Враг':'Нейтрал'}
+      </span>
+      <button class="btn-small" onclick="meetInf(${i})">Встреча -$500</button>
+    </div>
+  `).join('');
+}
+function clickZone(i){notify('Район: '+G.cityZones[i].name,'Развивайте этот район — стройте здесь и повышайте влияние!');}
+function meetInf(i){
+  if(!spend(500,'Деловая встреча'))return;
+  G.influencers[i].relation++;G.rep=Math.min(100,G.rep+2);
+  addNews('Встреча с '+G.influencers[i].name,'🤝');setStatus('Встреча с '+G.influencers[i].name);
+  renderCity();updateHUD();
+}
+
+function buildRoulette(){
+  const reds=[1,3,5,7,9,12,14,16,18,19,21,23,25,27,30,32,34,36];
+  let html='<div style="display:flex;flex-wrap:wrap;gap:2px;margin-bottom:8px">';
+  for(let n=0;n<=36;n++){
+    const color=n===0?'#1a7a1a':reds.includes(n)?'#a02020':'#202020';
+    html+=`<div class="roulette-cell" style="background:${color};color:#fff" onclick="betRoulette(${n},this)">${n}</div>`;
+  }
+  html+='</div><div style="display:flex;gap:4px;flex-wrap:wrap">';
+  html+=`<button class="btn-small" onclick="betRouletteColor('red',this)">🔴 Красное ×2</button>`;
+  html+=`<button class="btn-small" onclick="betRouletteColor('black',this)">⚫ Чёрное ×2</button>`;
+  html+=`<button class="btn-small" onclick="betRouletteColor('green',this)">🟢 Зеро ×35</button>`;
+  html+=`<button class="btn-small" onclick="betRouletteColor('even',this)">Чётное ×2</button>`;
+  html+=`<button class="btn-small" onclick="betRouletteColor('odd',this)">Нечётное ×2</button>`;
+  html+='</div>';
+  document.getElementById('roulette-board').innerHTML=html;
+}
+function betRoulette(n,el){
+  G.betChoice={type:'number',value:n,mult:35};
+  document.getElementById('bet-choice').textContent='Число '+n+' (×35)';
+  document.querySelectorAll('.roulette-cell').forEach(c=>c.style.outline='');
+  el.style.outline='2px solid var(--gold)';
+}
+function betRouletteColor(col){
+  const m={red:2,black:2,green:35,even:2,odd:2};
+  G.betChoice={type:'color',value:col,mult:m[col]};
+  const l={red:'Красное',black:'Чёрное',green:'Зеро',even:'Чётное',odd:'Нечётное'};
+  document.getElementById('bet-choice').textContent=l[col]+' (×'+m[col]+')';
+}
+function spinRoulette(){
+  if(!G.betChoice){notify('Выберите ставку','Нажмите на число или цвет!');return;}
+  const bet=parseInt(document.getElementById('roulette-bet').value)||1000;
+  if(!spend(bet,'Ставка в рулетку'))return;
+  const result=Math.floor(Math.random()*37);
+  const reds=[1,3,5,7,9,12,14,16,18,19,21,23,25,27,30,32,34,36];
+  let win=false;
+  const bc=G.betChoice;
+  if(bc.type==='number'&&bc.value===result)win=true;
+  if(bc.type==='color'&&bc.value==='red'&&reds.includes(result))win=true;
+  if(bc.type==='color'&&bc.value==='black'&&result>0&&!reds.includes(result))win=true;
+  if(bc.type==='color'&&bc.value==='green'&&result===0)win=true;
+  if(bc.type==='color'&&bc.value==='even'&&result>0&&result%2===0)win=true;
+  if(bc.type==='color'&&bc.value==='odd'&&result%2===1)win=true;
+  const resEl=document.getElementById('roulette-result');
+  if(win){const prize=bet*bc.mult;earn(prize);resEl.innerHTML='<span class="pos">🎉 Выпало '+result+'! Выигрыш: '+fmt(prize)+'</span>';addNews('Выигрыш в рулетку: '+fmt(prize),'🎰');}
+  else resEl.innerHTML='<span class="neg">😞 Выпало '+result+'. Проигрыш '+fmt(bet)+'</span>';
+  updateHUD();
+}
+
+const SLOTS=['🍒','🍋','🍊','🍇','💎','7️⃣','⭐','🔔','🎰'];
+function spinSlots(){
+  const bet=parseInt(document.getElementById('slots-bet').value)||500;
+  if(!spend(bet,'Слоты'))return;
+  const r=[SLOTS[Math.floor(Math.random()*SLOTS.length)],SLOTS[Math.floor(Math.random()*SLOTS.length)],SLOTS[Math.floor(Math.random()*SLOTS.length)]];
+  document.getElementById('slots-display').textContent=r.join('');
+  const resEl=document.getElementById('slots-result');
+  if(r[0]===r[1]&&r[1]===r[2]){
+    const mult=r[0]==='💎'?100:r[0]==='7️⃣'?50:r[0]==='🎰'?20:10;
+    const prize=bet*mult;earn(prize);
+    resEl.innerHTML='<span class="pos">🎊 ДЖЕКПОТ! ×'+mult+' = '+fmt(prize)+'</span>';
+    addNews('ДЖЕКПОТ в слотах: '+fmt(prize),'💎');
+  } else if(r[0]===r[1]||r[1]===r[2]){
+    const prize=bet*3;earn(prize);
+    resEl.innerHTML='<span class="pos">🎉 Два одинаковых! ×3 = '+fmt(prize)+'</span>';
+  } else {
+    resEl.innerHTML='<span class="neg">Нет совпадений. Проигрыш '+fmt(bet)+'</span>';
+  }
+  updateHUD();
+}
+
+let bjBet=0;
+function cardVal(c){return Math.min(10,c);}
+function handSum(h){return h.reduce((a,c)=>a+cardVal(c),0);}
+function cardStr(h){return h.map(c=>c===1?'A':c+'').join(' — ');}
+function bjDeal(){
+  bjBet=parseInt(document.getElementById('bj-bet').value)||2000;
+  if(!spend(bjBet,'Блэкджек'))return;
+  G.bjDeck=[];
+  for(let i=0;i<4;i++)for(let v=1;v<=10;v++)G.bjDeck.push(v);
+  G.bjDeck.sort(()=>Math.random()-.5);
+  G.bjPlayer=[G.bjDeck.pop(),G.bjDeck.pop()];
+  G.bjDealer=[G.bjDeck.pop(),G.bjDeck.pop()];
+  document.getElementById('bj-player-cards').textContent=cardStr(G.bjPlayer)+' ('+handSum(G.bjPlayer)+')';
+  document.getElementById('bj-dealer-cards').textContent=G.bjDealer[0]+' ?';
+  document.getElementById('bj-hit').disabled=false;
+  document.getElementById('bj-stand').disabled=false;
+  document.getElementById('bj-result').textContent='';
+  document.getElementById('bj-score').textContent='Ваши очки: '+handSum(G.bjPlayer);
+  updateHUD();
+}
+function bjHit(){
+  G.bjPlayer.push(G.bjDeck.pop());
+  const sum=handSum(G.bjPlayer);
+  document.getElementById('bj-player-cards').textContent=cardStr(G.bjPlayer)+' ('+sum+')';
+  document.getElementById('bj-score').textContent='Ваши очки: '+sum;
+  if(sum>21){
+    document.getElementById('bj-result').innerHTML='<span class="neg">Перебор! Проигрыш '+fmt(bjBet)+'</span>';
+    document.getElementById('bj-hit').disabled=true;document.getElementById('bj-stand').disabled=true;
+    updateHUD();
+  }
+}
+function bjStand(){
+  while(handSum(G.bjDealer)<17)G.bjDealer.push(G.bjDeck.pop());
+  const ps=handSum(G.bjPlayer),ds=handSum(G.bjDealer);
+  document.getElementById('bj-dealer-cards').textContent=cardStr(G.bjDealer)+' ('+ds+')';
+  document.getElementById('bj-hit').disabled=true;document.getElementById('bj-stand').disabled=true;
+  const resEl=document.getElementById('bj-result');
+  if(ds>21||ps>ds){earn(bjBet*2);resEl.innerHTML='<span class="pos">🎉 Победа! +'+fmt(bjBet)+'</span>';}
+  else if(ps===ds){earn(bjBet);resEl.innerHTML='<span style="color:var(--gold)">Ничья! Возврат '+fmt(bjBet)+'</span>';}
+  else resEl.innerHTML='<span class="neg">Проигрыш '+fmt(bjBet)+'</span>';
+  updateHUD();
+}
+
+function casinoTab(tab,btn){
+  document.getElementById('casino-roulette').style.display=tab==='roulette'?'':'none';
+  document.getElementById('casino-slots').style.display=tab==='slots'?'':'none';
+  document.getElementById('casino-blackjack').style.display=tab==='blackjack'?'':'none';
+  document.querySelectorAll('#sec-casino .tab').forEach(el=>el.classList.remove('active'));
+  if(btn)btn.classList.add('active');
+  if(tab==='roulette')buildRoulette();
+}
+
+function setSpeed(s){G.speed=s;setStatus(s===0?'⏸ Пауза':s===1?'▶ Нормальная скорость':'⏩ Ускоренный режим');}
+
+function gameTick(){
+  if(G.gameOver||G.speed===0)return;
+  G.tick++;
+  const ticks=G.speed===1?8:3;
+  if(G.tick%ticks!==0)return;
+  G.day++;
+  if(G.day>30){G.day=1;G.month++;endOfMonth();}
+  if(G.month>12){G.month=1;G.year++;G.age++;}
+  G.hunger=Math.max(0,G.hunger-1.5);
+  if(G.hunger<20)G.health=Math.max(0,G.health-0.5);
+  if(G.hunger>50)G.health=Math.min(100,G.health+0.1);
+  G.mood=Math.max(0,G.mood-(G.married?0.1:0.2));
+  if(G.married)G.mood=Math.min(100,G.mood+0.3);
+  processOrders();
+  if(Math.random()<0.004)triggerCrisis();
+  if(Math.random()<0.003)randomEvent();
+  updateHUD();
+  document.getElementById('status-time').textContent=getDateStr();
+  updateRightPanel();
+}
+
+function endOfMonth(){
+  let delta=0;
+  bizList.forEach(b=>delta+=b.income);
+  G.workers.forEach(w=>delta-=WORKER_TYPES[w.type].salary);
+  G.loans.forEach((l,i)=>{
+    delta-=l.monthly;
+    G.loans[i].remaining=Math.max(0,G.loans[i].remaining-l.monthly);
+    G.debt=Math.max(0,G.debt-l.monthly);
+  });
+  G.loans=G.loans.filter(l=>l.remaining>0);
+  if(G.children)delta-=G.children*500;
+  if(delta!==0)addNews('Ежемесячный '+(delta>0?'доход':'расход')+': '+fmtSign(delta),'📊');
+  earn(delta);
+  ['BUILD','REAL','BANK','OIL'].forEach(t=>{G.stockPrices[t]=Math.max(5,Math.round(G.stockPrices[t]*(0.82+Math.random()*0.36)));});
+}
+
+function processOrders(){
+  G.activeOrders=G.activeOrders.map(o=>{
+    const eff=Math.max(0.2,Math.min(1,G.workers.length/Math.max(1,o.workers)));
+    return {...o,daysLeft:Math.max(0,o.daysLeft-eff)};
+  });
+  G.activeOrders.filter(o=>o.daysLeft<=0).forEach(o=>{
+    earn(o.reward);G.rep=Math.min(100,G.rep+5);
+    addNews('Завершён заказ: '+o.name+'! +'+fmt(o.reward),'✅');
+    setStatus('Проект завершён: '+o.name);
+  });
+  G.activeOrders=G.activeOrders.filter(o=>o.daysLeft>0);
+}
+
+function triggerCrisis(){
+  const c=['Банкротство крупного застройщика — цены на материалы +15%!','Коррупционный скандал — тендеры заморожены','Строительная авария — проверки на всех объектах','Кризис — спрос на строительство упал','Забастовка рабочих — требуют повышения зарплаты'];
+  const crisis=c[Math.floor(Math.random()*c.length)];
+  G.crises.push(crisis);if(G.crises.length>5)G.crises.shift();
+  addNews('КРИЗИС: '+crisis,'🚨');
+  const el=document.getElementById('crisis-list');
+  if(el)el.innerHTML=G.crises.map(x=>'<div class="alert">'+x+'</div>').join('');
+}
+function randomEvent(){
+  const e=[['Городской тендер открыт! Новые заказы','📋'],['Мэр объявил строительство нового квартала','🏘'],['Инвестор ищет партнёра для проекта','💼'],['Ваша компания упомянута в репортаже!','📺']];
+  const ev=e[Math.floor(Math.random()*e.length)];
+  addNews(ev[0],ev[1]);
+}
+
+function updateRightPanel(){
+  const bizIncome=bizList.reduce((a,b)=>a+b.income,0);
+  const salary=G.workers.reduce((a,w)=>a+WORKER_TYPES[w.type].salary,0);
+  const loans=G.loans.reduce((a,l)=>a+l.monthly,0);
+  document.getElementById('right-finance').innerHTML=`
+    <div>Бизнес: <span class="pos">+${fmt(bizIncome)}/мес</span></div>
+    <div>Зарплаты: <span class="neg">-${fmt(salary)}/мес</span></div>
+    <div>Кредиты: <span class="neg">-${fmt(loans)}/мес</span></div>
+    <div style="border-top:1px solid var(--border);padding-top:4px;margin-top:4px">
+      Итого: <span class="${bizIncome-salary-loans>=0?'pos':'neg'}">${fmtSign(bizIncome-salary-loans)}/мес</span>
+    </div>
+    <div style="margin-top:4px">Заработано всего: <span class="money">${fmt(G.totalEarned)}</span></div>
+  `;
+  document.getElementById('right-events').innerHTML=G.news.slice(-5).reverse().map(n=>`<div style="border-bottom:1px solid var(--border);padding:2px 0">${n.icon} ${n.text}</div>`).join('');
+  const grade=G.rep>=90?'SSS':G.rep>=80?'SS':G.rep>=70?'S':G.rep>=60?'A':G.rep>=50?'B':G.rep>=40?'C':'D';
+  const gc=G.rep>=70?'var(--green)':G.rep>=50?'var(--gold)':'var(--red)';
+  document.getElementById('right-rating').innerHTML=`
+    <div style="text-align:center;font-size:28px;font-weight:700;color:${gc}">${grade}</div>
+    <div style="text-align:center;font-size:11px;color:var(--gray);margin-bottom:6px">Рейтинг компании</div>
+    <div style="font-size:10px">
+      <div>Репутация: ${G.rep}/100</div>
+      <div>Рабочих: ${G.workers.length}</div>
+      <div>Техники: ${G.equipment.length} ед.</div>
+      <div>Проектов: ${G.activeOrders.length}</div>
+      <div>Бизнесов: ${bizList.length}</div>
+    </div>
+  `;
+}
+
+function startGame(){
+  buildRoulette();renderOrders();updateHUD();
+  addNews('Компания "СтройИмпериум" основана!','🏗');
+  addNews('Город Скайпик ждёт застройщиков','🌆');
+  if(timer)clearInterval(timer);
+  timer=setInterval(gameTick,250);
+}
+
+startGame();
+</script>
+</body>
+</html>
